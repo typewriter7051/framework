@@ -1,34 +1,43 @@
 #include <vector>
 #include <algorithm>		// for std::fill
-//#include <SFML/Audio.hpp>
+#include <SFML/Audio.hpp>
 
 //https://www.sfml-dev.org/tutorials/2.5/audio-streams.php
 
 namespace sound {
 
-	class Synth {
+	class Channel;
 
-		Channel* channel;
+	class Synth {
+	public:
+
+		std::vector<float>* getBuffer(unsigned int numSamples);
+
+	protected:
+
+		virtual void generateBuffer() = 0;
 
 		std::vector<float> samples;
 
-		std::vector<float>* getBuffer(unsigned int numSamples) {}
-
-		std::vector<float>* generateBuffer() = 0;
+	private:
+		
+		std::shared_ptr<Channel> channel;
 
 	};
 
 	class Effect {
 
-		float mix, gain;
-
-		std::vector<float> samples;
-
 	public:
 
-		void processAndHandleBuffer(std::vector<float>& b) {}
+		void processBufferAndMix(std::vector<float>& b);
 
-		void processBuffer(std::vector<float>&) = 0;
+	protected:
+
+		virtual void processBuffer(std::vector<float>&) = 0;
+
+		float mix, gain;
+
+		std::vector<float> drySamples;
 
 	};
 
@@ -59,19 +68,38 @@ namespace sound {
 		
 		*/
 
-		std::vector<float>* processBuffer(std::vector<float>& buffer) {}
+		std::vector<float>* processBuffer(std::vector<float>& buffer);
 
 	private:
 		// Holds a list of all the desired sound effects on the channel.
-		std::vector<Effect> effects;
+		std::vector<std::shared_ptr<Effect>> effects;
 
 		std::vector<float> samples;
 
 	};
 
-	/*
+	class SoundHandler : public sf::SoundStream {
+	public:
 
-	On getData() call:
+		SoundHandler() {
+
+			bufferSize = 2048;
+			convertedSamples.resize(bufferSize);
+			masterSamples.resize(bufferSize);
+
+			numChannels = 2;
+			sampleRate = 44100;
+
+			initialize(numChannels, sampleRate);
+
+			// Push out a blank channel as master.
+			channels.push_back(Channel(bufferSize));
+
+		}
+
+		/*
+
+		On getData() call:
 
 		-iterate through list of generators and call generateBuffer();
 
@@ -81,39 +109,26 @@ namespace sound {
 
 		-THEN set the data.samples pointer after all is done.
 
-	*/
-
-	/*class SoundHandler : public sf::SoundStream {
-	public:
-
-		SoundHandler() {
-
-			bufferSize = 2048;
-			samples.resize(bufferSize);
-			initialize(numChannels, sampleRate);
-
-			// Push out a blank channel as master.
-			channels.push_back(Channel(bufferSize));
-
-		}
-
-		bool onGetData(Chunk& data) override {}
-
-		void onSeek(sf::Time timeOffset) override;
+		*/
 
 	private:
+
+		void onSeek(sf::Time timeOffset) override {}
+
+		bool onGetData(Chunk& data) override;
+
+		std::vector<std::shared_ptr<Synth>> synths;
 
 		// Holds all the channels that are playing sound.
 		std::vector<Channel> channels;
 
-		std::vector<SoundGenerator*> synths;
-
-		std::vector<sf::Int16> samples;
+		std::vector<sf::Int16> convertedSamples;
+		std::vector<float> masterSamples;
 
 		unsigned int numChannels;
 		unsigned int sampleRate;
 		unsigned int bufferSize;
 
-	};*/
+	};
 
 }

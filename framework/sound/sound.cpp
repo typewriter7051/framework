@@ -5,38 +5,34 @@ std::vector<float>* sound::Synth::getBuffer(unsigned int numSamples) {
 	// detect change in sample rate.
 	if (samples.size() != numSamples) samples.resize(numSamples);
 
-	return channel->processBuffer(generateBuffer());
+	generateBuffer();
+
+	return channel->processBuffer(samples);
 
 }
 
-void sound::Effect::processAndHandleBuffer(std::vector<float>& b) {
+void sound::Effect::processBufferAndMix(std::vector<float>& b) {
 
-	samples.assign(b);
+	drySamples = b;
 
-	processBuffer(samples);
+	processBuffer(b);
 
-	for (int s = 0; s < samples.size(); s++) {
+	for (int i = 0; i < b.size(); i++) {
 
-		// Mix processing.
-		// wet = mix * wet + (1 - mix) * dry.
-		samples.at(s) = mix * samples.at(s) + (1 - mix) * b.at(s);
-
-		// Gain processing.
-		samples.at(s) *= gain;
+		// Apply mix and gain.
+		b.at(i) = (mix * b.at(i) + (1 - mix) * drySamples.at(i)) * gain;
 
 	}
 
-
 }
 
-std::vector<float>* sound::Channel::processBuffer(std::vector<float>& buffer) {
+std::vector<float>* sound::Channel::processBuffer(std::vector<float> & buffer) {
 
-	// copy the values of buffer into samples.
-	samples.assign(buffer);
+	samples = buffer;
 
-	for (auto& e : effects) {
+	for (std::shared_ptr<Effect> e : effects) {
 
-		e.processBuffer(samples);
+		e->processBufferAndMix(samples);
 
 	}
 
@@ -44,41 +40,42 @@ std::vector<float>* sound::Channel::processBuffer(std::vector<float>& buffer) {
 
 }
 
-/*bool sound::SoundHandler::onGetData(Chunk& data) override {
+bool sound::SoundHandler::onGetData(Chunk& data) {
 
-	// Add every output to the master buffer.
+	// Clear the master channel.
+	std::fill(masterSamples.begin(), masterSamples.end(), 0);
 
-	std::vector<float>* channelBuffer;
+	std::vector<float>* tempSamples;
 
-	std::vector<float> masterBuffer; // float cast of "samples" vector.
-	masterBuffer.resize(bufferSize);
-	std::fill(masterBuffer.begin(), masterBuffer.end(), 0);
+	for (std::shared_ptr<Synth> s : synths) {
 
-	for (int g = 0; g < synths.size(); g++) {
+		tempSamples = s->getBuffer(bufferSize);
 
-		channelBuffer = synths.at(g)->getBuffer();
-
-		// Add the channel output to the master buffer.
-		for (int s = 0; s < bufferSize; s++) {
-
-			masterBuffer.at(s) += channelBuffer.at(s);
-
-		}
+		for (int i = 0; i < masterSamples.size(); i++) { masterSamples.at(i) += tempSamples->at(i); }
 
 	}
 
-	// Apply post processing.
+	// Master channel processing.
+	channels.at(0).processBuffer(masterSamples);
 
+	for (float s : masterSamples) {
 
-	// Finally assign stream var to the audio data.
+		// Basic clipping if all else fails.
+		if (s > 1) s = 1;
+		else if (s < -1) s = -1;
 
-	// Recast back to Int16.
-	// Since we're directly assigning the elements in "samples"
-	// there's no need to clear the vector.
-	for (int s = 0; s < bufferSize; s++) { samples.at(s) = masterBuffer.at(s); }
+	}
 
-	data.samples = &samples;
+	for (int i = 0; i < bufferSize; i++) {
+
+		// Convert to sf::Int16 and store in the convertedSamples vector.
+		convertedSamples.at(i) = masterSamples.at(i) * UINT16_MAX;
+
+	}
+
+	data.samples = &convertedSamples.at(0);
 	data.sampleCount = bufferSize;
+
 	return true;
 
-}*/
+}

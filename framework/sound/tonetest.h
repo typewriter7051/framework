@@ -14,9 +14,11 @@ class ToneTest : public sound::Synth {
 
 	}
 
-	std::vector<float>* processBuffer(unsigned int numSamples) override {
+	std::vector<float>* generateBuffer(unsigned int numSamples) override {
 
+		for (int i = 0; i < numSamples; i++) {
 
+		}
 
 	}
 

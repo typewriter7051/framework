@@ -1,14 +1,20 @@
 #include <chrono>
 #include <string>
 #include <vector>
+#include <iostream>
 
 // Basic profiler mark containing the value and name.
 // You can only define via constructor to prevent future alteration.
 class ProfilerMark {
 public:
 
-	ProfileMark() {}
-	ProfileMark(double v, std::string n) : value(v), name(n) {}
+	ProfilerMark() {}
+	ProfilerMark(double v, std::string n) {
+	
+		value = v;
+		name = n;
+
+	}
 
 	double getValue() { return value; }
 	std::string getName() { return name; }
@@ -28,10 +34,10 @@ public:
 	void reset() { marks.clear(); }
 
 	// Used for time benchmarking.
-	void addMark(std::string name) {}
+	void addMark(std::string name);
 
 
-	void printProfile(bool normalize) {}
+	void printProfile(bool normalize);
 
 protected:
 
@@ -39,7 +45,6 @@ protected:
 
 private:
 
-	typedef std::chrono::high_resolution_clock::now() now();
 	std::chrono::steady_clock::time_point timeMark;
 
 };
