@@ -16,6 +16,8 @@ void Window::addScene(std::shared_ptr<Scene> s) {
 
 }
 
+std::shared_ptr<sf::RenderWindow> Window::getPointer() { return window; }
+
 //int Window::getUIListNum() { return UIElements.size(); }
 
 void Window::getInput() {

@@ -4,9 +4,9 @@
 #include <vector>
 #include <chrono>
 #include <memory> // for smart pointers
-#include "../fonts/Montserrat-Light.h"
+//#include "../fonts/Montserrat-Light.h"
 //#include "fonts/NotoSansTC-Light.h"
-#include "../fonts/NotoSansSC-Light.h"
+//#include "../fonts/NotoSansSC-Light.h"
 
 struct MouseState {
 
@@ -193,7 +193,7 @@ public:
 
 	void getInput();
 
-	std::unique_ptr<sf::RenderWindow> getPointer();
+	std::shared_ptr<sf::RenderWindow> getPointer();
 
 	void setDrawBehindComponents(void(*f)(std::shared_ptr<sf::RenderWindow>)) { drawBehindComponents = f; }
 	void setDrawAheadComponents(void(*f)(std::shared_ptr<sf::RenderWindow>)) { drawAheadComponents = f; }

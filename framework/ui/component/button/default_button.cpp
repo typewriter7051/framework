@@ -13,7 +13,7 @@ DefaultButton::DefaultButton() : clickLock(false) {
 
 DefaultButton::DefaultButton(Scene* scene, void(*func)()) : clickLock(false) {
 
-    scene->addUIElement(this);
+    scene->addUIElement(std::shared_ptr<Interactable>(this));
 
     idleColor = sf::Color(230, 230, 230, 200);
     clickedColor = sf::Color::White;
@@ -60,12 +60,6 @@ void DefaultButton::getInput(MouseState& ms, double timePassed, SceneInfo info) 
     }
 
 }
-
-
-
-sf::RenderWindow* Window::getPointer() { return window; }
-
-
 
 void DefaultButton::draw(std::shared_ptr<sf::RenderWindow> window, SceneInfo info) {
 
