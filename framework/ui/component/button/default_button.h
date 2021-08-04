@@ -1,3 +1,5 @@
+#ifndef default_button
+
 #include "../../ui.h"
 
 class DefaultButton : public Interactable {
@@ -34,3 +36,5 @@ protected:
 	void(*callWhenPressed)();
 
 };
+
+#endif // !default_button

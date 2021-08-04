@@ -4,8 +4,9 @@
 #include <vector>
 #include <chrono>
 #include <memory> // for smart pointers
-//#include "../fonts/Montserrat-Light.h"
-//#include "fonts/NotoSansTC-Light.h"
+#include "../fonts/Montserrat-Light.h"
+#include "../fonts/Montserrat-SemiBold.h"
+//#include "../fonts/NotoSansTC-Light.h"
 //#include "../fonts/NotoSansSC-Light.h"
 
 struct MouseState {
@@ -56,15 +57,15 @@ class Scene {
 protected:
 
 	std::vector<std::shared_ptr<Interactable>> elements;
+	std::vector<std::shared_ptr<Scene>> nestedScenes;
 
 	SceneInfo info;
 
 	bool hide;
-	bool disable;
 
 public:
 
-	Scene() {}
+	Scene() : hide(false) {}
 
 	void addUIElement(std::shared_ptr<Interactable> i) {
 
@@ -85,9 +86,6 @@ public:
 	void hideScene() { hide = true; }
 	void unhideScene() { hide = false; }
 
-	void disableScene() { disable = true; }
-	void enableScene() { disable = false; }
-
 	bool shouldHideMouse() {
 
 		if (hide) return false;
@@ -96,6 +94,13 @@ public:
 
 			if (i->shouldHideMouse())
 				return true;
+
+		}
+
+		// Checks within nested scenes.
+		for (std::shared_ptr<Scene> s : nestedScenes) {
+
+			s->shouldHideMouse();
 
 		}
 
@@ -113,6 +118,13 @@ public:
 
 		}
 
+		// Nested scenes.
+		for (std::shared_ptr<Scene> s : nestedScenes) {
+
+			s->getInput(ms, timePassed);
+
+		}
+
 		process(ms, timePassed);
 
 	}
@@ -124,6 +136,13 @@ public:
 		for (std::shared_ptr<Interactable> i : elements) {
 
 			i->draw(window, info);
+
+		}
+
+		// Draw nested scenes.
+		for (std::shared_ptr<Scene> s : nestedScenes) {
+
+			s->draw(window);
 
 		}
 

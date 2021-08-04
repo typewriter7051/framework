@@ -1,3 +1,5 @@
+#ifndef outline_button
+
 #include "../../ui.h"
 
 class OutlineButton : public Interactable {
@@ -16,6 +18,8 @@ public:
 	void setIdleColor(sf::Color c) { idleColor = c; }
 	void setClickedColor(sf::Color c) { clickedColor = c; }
 
+	void setScaleAmt(float n) { scaleAmt = n; }
+
 	void getInput(MouseState& ms, double timePased, SceneInfo info) override;
 
 	void draw(std::shared_ptr<sf::RenderWindow> window, SceneInfo info) override;
@@ -26,8 +30,8 @@ protected:
 
 	float hoverVal;
 	float hoverTarget;
-	float hoverStr;sldkfj
-	float scaleAmt = 1.2;
+	float hoverStr;
+	float scaleAmt = 1.05;
 
 	sf::Vector2f pos;
 	sf::Vector2f dims;
@@ -39,3 +43,5 @@ protected:
 	void(*callWhenPressed)();
 
 };
+
+#endif // !outline_button

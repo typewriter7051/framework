@@ -9,9 +9,7 @@ DefaultButton::DefaultButton() : clickLock(false) {
 
 }
 
-
-
-DefaultButton::DefaultButton(Scene* scene, void(*func)()) : clickLock(false) {
+DefaultButton::DefaultButton(Scene* scene, void(*func)()) {
 
     scene->addUIElement(std::shared_ptr<Interactable>(this));
 
@@ -20,11 +18,10 @@ DefaultButton::DefaultButton(Scene* scene, void(*func)()) : clickLock(false) {
 
     callWhenPressed = func;
 
+    clickLock = false;
     hideMouse = false;
 
 }
-
-
 
 void DefaultButton::getInput(MouseState& ms, double timePassed, SceneInfo info) {
 

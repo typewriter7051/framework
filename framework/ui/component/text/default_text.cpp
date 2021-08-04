@@ -18,7 +18,7 @@ void DefaultText::draw(std::shared_ptr<sf::RenderWindow> window, SceneInfo info)
         sf::FloatRect textBounds = ti.text.getGlobalBounds();
 
         sf::Vector2f thang = ti.scenePos;
-        thang += scene->getPos();
+        thang += info.pos;
         ti.text.setPosition(thang);
 
         if (ti.centered) {

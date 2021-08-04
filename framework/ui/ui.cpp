@@ -1,7 +1,5 @@
 #include "ui.h"
 
-
-
 Window::Window() : WIDTH(1000), HEIGHT(500) {
 
     
@@ -151,6 +149,8 @@ void Window::start(sf::String title) {
 
     settings.antialiasingLevel = 8;
     window.reset(new sf::RenderWindow(sf::VideoMode(WIDTH, HEIGHT), windowTitle, sf::Style::Default, settings));
+
+    window->setFramerateLimit(60);
 
     time = std::chrono::high_resolution_clock::now();
 
