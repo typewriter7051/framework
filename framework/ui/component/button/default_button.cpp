@@ -37,17 +37,8 @@ void DefaultButton::getInput(MouseState& ms, double timePassed, SceneInfo info) 
 
         currentColor = mouseOverColor;
 
-        if (ms.lButtonDown && !clickLock) {
-
-            callWhenPressed();
-            clickLock = true;
-
-        }
-        if (!ms.lButtonDown) {
-
-            clickLock = false;
-
-        }
+        if (ms.lButtonDown && !clickLock && !prevLButtonState) { clickLock = true; }
+        if (clickLock && !ms.lButtonDown) { callWhenPressed(); }
 
     }
     else {
@@ -55,6 +46,10 @@ void DefaultButton::getInput(MouseState& ms, double timePassed, SceneInfo info) 
         currentColor = idleColor;
 
     }
+
+    if (!ms.lButtonDown) clickLock = false;
+
+    prevLButtonState = ms.lButtonDown;
 
 }
 

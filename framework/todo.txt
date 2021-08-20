@@ -1,12 +1,15 @@
-DefaultKnob
+DefaultKnob - hovering over with lmb already pressed
 OutlineKnob
 FillKnob
 
-DefaultButton
+!DefaultButton
 OutlineButton
 
 DefaultDraggable
 
 Graph
+TimePlot?
 
 Dropdown
+
+the actual documentation

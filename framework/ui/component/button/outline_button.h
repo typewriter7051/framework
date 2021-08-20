@@ -27,6 +27,7 @@ public:
 protected:
 
 	bool clickLock;
+	bool prevLButtonState;
 
 	float hoverVal;
 	float hoverTarget;

@@ -27,6 +27,7 @@ struct SceneInfo {
 	double age = 0;
 	double opacity = 1;
 	sf::Vector2f pos;
+	sf::String id;
 
 };
 
@@ -52,6 +53,59 @@ public:
 
 //=====================================================================================================================
 
+class Scene;
+
+class Window {
+private:
+
+	sf::Event event;
+	int WIDTH, HEIGHT;
+
+	sf::String windowTitle;
+
+	double timePassed;
+	std::chrono::steady_clock::time_point time;
+
+	sf::ContextSettings settings;
+	std::shared_ptr<sf::RenderWindow> window;
+	bool isFullScreen = false;
+
+	void(*drawBehindComponents)(std::shared_ptr<sf::RenderWindow>);
+	void(*drawAheadComponents)(std::shared_ptr<sf::RenderWindow>);
+
+	MouseState mouseState;
+
+	std::vector<std::shared_ptr<Scene>> scenes;
+
+	sf::String* textInput;
+
+public:
+
+	Window();
+
+	bool isOpen();
+
+	void windowFunctions();
+
+	void getInput();
+
+	void switchScene(sf::String);
+
+	std::shared_ptr<sf::RenderWindow> getPointer();
+
+	void setDrawBehindComponents(void(*f)(std::shared_ptr<sf::RenderWindow>)) { drawBehindComponents = f; }
+	void setDrawAheadComponents(void(*f)(std::shared_ptr<sf::RenderWindow>)) { drawAheadComponents = f; }
+
+	void drawWindow();
+
+	void addScene(std::shared_ptr<Scene>);
+
+	void start(sf::String);
+
+};
+
+//=====================================================================================================================
+
 // A Scene is comprised of a list of "elements" of type Interactable.
 class Scene {
 protected:
@@ -63,6 +117,9 @@ protected:
 
 	bool hide;
 
+	friend class Window;
+	Window* parentWindow;
+
 public:
 
 	Scene() : hide(false) {}
@@ -70,6 +127,12 @@ public:
 	void addUIElement(std::shared_ptr<Interactable> i) {
 
 		elements.push_back(i);
+
+	}
+
+	void switchScene(sf::String name) {
+
+		parentWindow->switchScene(name);
 
 	}
 
@@ -110,18 +173,20 @@ public:
 
 	void getInput(MouseState& ms, double timePassed) {
 
-		if (hide) return;
+		if (!hide) {
 
-		for (std::shared_ptr<Interactable> i : elements) {
+			for (std::shared_ptr<Interactable> i : elements) {
 
-			i->getInput(ms, timePassed, info);
+				i->getInput(ms, timePassed, info);
 
-		}
+			}
 
-		// Nested scenes.
-		for (std::shared_ptr<Scene> s : nestedScenes) {
+			// Nested scenes.
+			for (std::shared_ptr<Scene> s : nestedScenes) {
 
-			s->getInput(ms, timePassed);
+				s->getInput(ms, timePassed);
+
+			}
 
 		}
 
@@ -130,7 +195,7 @@ public:
 	}
 
 	void draw(std::shared_ptr<sf::RenderWindow> window) {
-	
+
 		drawBehindUI(window);
 
 		for (std::shared_ptr<Interactable> i : elements) {
@@ -173,54 +238,5 @@ public:
 
 
 	}
-
-};
-
-//=====================================================================================================================
-
-class Window {
-private:
-
-	sf::Event event;
-	int WIDTH, HEIGHT;
-
-	sf::String windowTitle;
-
-	double timePassed;
-	std::chrono::steady_clock::time_point time;
-
-	sf::ContextSettings settings;
-	std::shared_ptr<sf::RenderWindow> window;
-	bool isFullScreen = false;
-
-	void(*drawBehindComponents)(std::shared_ptr<sf::RenderWindow>);
-	void(*drawAheadComponents)(std::shared_ptr<sf::RenderWindow>);
-
-	MouseState mouseState;
-
-	std::vector<std::shared_ptr<Scene>> scenes;
-
-	sf::String* textInput;
-
-public:
-
-	Window();
-
-	bool isOpen();
-
-	void windowFunctions();
-
-	void getInput();
-
-	std::shared_ptr<sf::RenderWindow> getPointer();
-
-	void setDrawBehindComponents(void(*f)(std::shared_ptr<sf::RenderWindow>)) { drawBehindComponents = f; }
-	void setDrawAheadComponents(void(*f)(std::shared_ptr<sf::RenderWindow>)) { drawAheadComponents = f; }
-
-	void drawWindow();
-
-	void addScene(std::shared_ptr<Scene>);
-
-	void start(sf::String);
 
 };

@@ -25,6 +25,7 @@ public:
 protected:
 
 	bool clickLock;
+	bool prevLButtonState;
 
 	sf::Vector2f pos;
 	sf::Vector2f dims;

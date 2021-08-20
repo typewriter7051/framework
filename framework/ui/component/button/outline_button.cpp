@@ -37,26 +37,25 @@ void OutlineButton::getInput(MouseState& ms, double timePassed, SceneInfo info) 
 
         hoverTarget = 1;
 
-        if (ms.lButtonDown && !clickLock) {
+        sf::Color mouseOverColor = idleColor;
+        mouseOverColor.r += 25;
+        mouseOverColor.g += 25;
+        mouseOverColor.b += 25;
 
-            callWhenPressed();
-            clickLock = true;
+        currentColor = mouseOverColor;
 
-        }
-        if (!ms.lButtonDown) {
-
-            clickLock = false;
-
-        }
+        if (ms.lButtonDown && !clickLock && !prevLButtonState) { clickLock = true; }
+        if (clickLock && !ms.lButtonDown) { callWhenPressed(); }
 
     }
     else {
 
         currentColor = idleColor;
-
         hoverTarget = 0;
 
     }
+
+    if (!ms.lButtonDown) clickLock = false;
 
     // limit timePassed to be no more than 1/30 of a second.
     if (timePassed > 0.035) { timePassed = 0.035; }
@@ -68,6 +67,8 @@ void OutlineButton::getInput(MouseState& ms, double timePassed, SceneInfo info) 
 
     else
         hoverVal = hoverTarget;
+
+    prevLButtonState = ms.lButtonDown;
 
 }
 

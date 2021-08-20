@@ -6,11 +6,29 @@ Window::Window() : WIDTH(1000), HEIGHT(500) {
 
 }
 
+
+
 bool Window::isOpen() { return window->isOpen(); }
+
+void Window::switchScene(sf::String name) {
+
+    for (std::shared_ptr<Scene> s : scenes) {
+
+        if (s->info.id == name) {
+
+            if (!s->hide) s->hide = true;
+            else s->hide = false;
+
+        }
+
+    }
+
+}
 
 void Window::addScene(std::shared_ptr<Scene> s) {
 
     scenes.push_back(s);
+    s->parentWindow = this;
 
 }
 
