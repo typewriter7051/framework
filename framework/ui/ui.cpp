@@ -1,5 +1,7 @@
 #include "ui.h"
 
+// Barebones default constructor for a Window class.
+// Most of the time the user will initialize this to something else in Window::Start(sf::String).
 Window::Window() : WIDTH(1000), HEIGHT(500) {
 
     
@@ -40,6 +42,9 @@ void Window::getInput() {
 
     while (window->pollEvent(event)) {
 
+        //--------------------------------------------------------------------------------
+        // Typical cases such as closing the window, resizing, etc...
+
         if (event.type == sf::Event::Closed)
             window->close();
 
@@ -64,13 +69,25 @@ void Window::getInput() {
 
         }
 
+        //--------------------------------------------------------------------------------
+        // Iterates through all existing scenes and elements, and calls eventHandle function.
+
         for (std::shared_ptr<Scene> s : scenes) {
 
             s->eventHandle(event);
 
+            for (std::shared_ptr<Interactable> i : s->elements) {
+
+                i->eventHandle(event);
+
+            }
+
         }
 
     }
+
+    //--------------------------------------------------------------------------------
+    // Fullscreen support.
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::F11)) {
 
@@ -89,6 +106,9 @@ void Window::getInput() {
 
     }
 
+    //--------------------------------------------------------------------------------
+    // Updating mouse info.
+
     if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
         mouseState.lButtonDown = true;
     else
@@ -101,24 +121,35 @@ void Window::getInput() {
 
     mouseState.pos = sf::Vector2f(sf::Mouse::getPosition(*window));
 
+    //--------------------------------------------------------------------------------
+    // Process inputs for all existing scenes.
+
     for (std::shared_ptr<Scene> s : scenes) {
 
         s->updateTime(timePassed);
-        s->getInput(mouseState, timePassed);
+        s->getInput(event, mouseState, timePassed);
 
     }
 
 }
 
+//===============================================================================
+
 void Window::drawWindow() {
 
     window->clear();
+
+    //--------------------------------------------------------------------------------
+    // Background drawing.
 
     if (drawBehindComponents != nullptr) {
 
         drawBehindComponents(window);
 
     }
+
+    //--------------------------------------------------------------------------------
+    // Actual scene drawing, and decides whether to hide mouse or not.
 
     int elementsThatHideMouse = 0;
 
@@ -138,6 +169,9 @@ void Window::drawWindow() {
         window->setMouseCursorVisible(true);
     }
 
+    //--------------------------------------------------------------------------------
+    // Foreground drawing.
+
     if (drawAheadComponents != nullptr) {
 
         drawAheadComponents(window);
@@ -147,6 +181,8 @@ void Window::drawWindow() {
     window->display();
 
 }
+
+//===============================================================================
 
 void Window::windowFunctions() {
 
@@ -160,6 +196,8 @@ void Window::windowFunctions() {
     drawWindow();
 
 }
+
+//===============================================================================
 
 void Window::start(sf::String title) {
 

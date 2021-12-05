@@ -10,8 +10,10 @@ void Profiler::addMark(std::string name) {
 		timeMark = high_resolution_clock::now();
 
 	}
-	// Otherwise create a mark based on the amount of time passed since the last mark.
+
 	else {
+
+		// Otherwise create a mark based on the amount of time passed since the last mark.
 
 		double timeSinceMark = std::chrono::duration<double>(high_resolution_clock::now() - timeMark).count();
 		marks.push_back(ProfilerMark(timeSinceMark, name));
@@ -31,15 +33,18 @@ void Profiler::printProfile(bool normalize) {
 	if (normalize) { for (ProfilerMark m : marks) total += m.getValue(); }
 
 	std::cout << "--------------------------------------------------\n";
-	std::cout << "PROFILE:\n Total time passed: " << total << std::endl;
+	std::cout << "PROFILE:\nTotal time passed: " << total << std::endl;
 
 	for (ProfilerMark m : marks) {
 
 		if (normalize) {
 
-			std::cout << m.getName() << ": %" << m.getValue() * 100 << std::endl;
+			// Just displays as a percentage instead of absolute value.
+
+			std::cout << m.getName() << ": %" << m.getValue() / total * 100 << std::endl;
 
 		}
+
 		else {
 
 			std::cout << m.getName() << ": " << m.getValue() << std::endl;

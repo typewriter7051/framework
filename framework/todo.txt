@@ -1,4 +1,4 @@
-DefaultKnob - hovering over with lmb already pressed
+!DefaultKnob
 OutlineKnob
 FillKnob
 
@@ -11,5 +11,7 @@ Graph
 TimePlot?
 
 Dropdown
+
+CA
 
 the actual documentation

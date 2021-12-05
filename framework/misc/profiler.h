@@ -29,6 +29,8 @@ private:
 class Profiler {
 public:
 
+	//--------------------------------------------------------------------------------
+
 	// I don't reset timeMark here since it already gets
 	// reset upon adding the first mark in the list.
 	void reset() { marks.clear(); }
@@ -41,10 +43,16 @@ public:
 
 protected:
 
+	//--------------------------------------------------------------------------------
+
+	// List of every time mark (besides the first) the user has made during profile recording.
 	std::vector<ProfilerMark> marks;
 
 private:
 
+	//--------------------------------------------------------------------------------
+
+	// Initial time mark.
 	std::chrono::steady_clock::time_point timeMark;
 
 };

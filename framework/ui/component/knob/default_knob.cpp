@@ -10,7 +10,7 @@ DefaultKnob::DefaultKnob(Scene* scene) {
     // Appearance
     radius = 20;
     sensitivity = 0.005;
-    thickness = 1.5;
+    thickness = 1;
     dashLength = 3;
     angleWidth = 0.75; // 75% of the full circle is used.
 
@@ -43,7 +43,7 @@ void DefaultKnob::getInput(MouseState& ms, double timePassed, SceneInfo info) {
 
             }
 
-            isLifted = true;
+            if (!prevLButtonState) isLifted = true;
 
         }
         else {
@@ -56,11 +56,7 @@ void DefaultKnob::getInput(MouseState& ms, double timePassed, SceneInfo info) {
     }
     else {
 
-        if (!ms.lButtonDown) {
-
-            isLifted = false;
-
-        }
+        if (!ms.lButtonDown) isLifted = false;
 
         pointerColor = sf::Color(255, 255, 255, 200);
 
@@ -84,6 +80,8 @@ void DefaultKnob::getInput(MouseState& ms, double timePassed, SceneInfo info) {
         positionMouse = false;
 
     }
+
+    prevLButtonState = ms.lButtonDown;
 
 }
 

@@ -5,7 +5,8 @@
 #include <chrono>
 #include <memory> // for smart pointers
 #include "../fonts/Montserrat-Light.h"
-#include "../fonts/Montserrat-SemiBold.h"
+//#include "../fonts/Montserrat-SemiBold.h"
+//#include "../fonts/NotoSansSC-Bold.h"
 //#include "../fonts/NotoSansTC-Light.h"
 //#include "../fonts/NotoSansSC-Light.h"
 
@@ -20,7 +21,7 @@ struct MouseState {
 
 };
 
-//=====================================================================================================================
+//===============================================================================
 
 struct SceneInfo {
 
@@ -49,9 +50,11 @@ public:
 
 	virtual void draw(std::shared_ptr<sf::RenderWindow> window, SceneInfo) = 0;
 
+	virtual void eventHandle(sf::Event& event) {}
+
 };
 
-//=====================================================================================================================
+//===============================================================================
 
 class Scene;
 
@@ -96,6 +99,8 @@ public:
 	void setDrawBehindComponents(void(*f)(std::shared_ptr<sf::RenderWindow>)) { drawBehindComponents = f; }
 	void setDrawAheadComponents(void(*f)(std::shared_ptr<sf::RenderWindow>)) { drawAheadComponents = f; }
 
+	// bool pollEvent(sf::Event event) { return window->pollEvent(event); }
+
 	void drawWindow();
 
 	void addScene(std::shared_ptr<Scene>);
@@ -104,7 +109,7 @@ public:
 
 };
 
-//=====================================================================================================================
+//===============================================================================
 
 // A Scene is comprised of a list of "elements" of type Interactable.
 class Scene {
@@ -149,6 +154,8 @@ public:
 	void hideScene() { hide = true; }
 	void unhideScene() { hide = false; }
 
+	//--------------------------------------------------------------------------------
+
 	bool shouldHideMouse() {
 
 		if (hide) return false;
@@ -171,7 +178,9 @@ public:
 
 	}
 
-	void getInput(MouseState& ms, double timePassed) {
+	//--------------------------------------------------------------------------------
+
+	void getInput(sf::Event event, MouseState& ms, double timePassed) {
 
 		if (!hide) {
 
@@ -184,7 +193,7 @@ public:
 			// Nested scenes.
 			for (std::shared_ptr<Scene> s : nestedScenes) {
 
-				s->getInput(ms, timePassed);
+				s->getInput(event, ms, timePassed);
 
 			}
 
@@ -194,7 +203,11 @@ public:
 
 	}
 
+	//--------------------------------------------------------------------------------
+
 	void draw(std::shared_ptr<sf::RenderWindow> window) {
+
+		if (hide) return;
 
 		drawBehindUI(window);
 
@@ -214,6 +227,8 @@ public:
 		drawAheadUI(window);
 
 	}
+
+	//--------------------------------------------------------------------------------
 
 	virtual void drawBehindUI(std::shared_ptr<sf::RenderWindow> window) {
 

@@ -20,6 +20,7 @@ public:
 private:
 
 	bool clickLock;
+	bool prevLButtonState;
 	bool isLifted;
 	bool positionMouse;
 	sf::Vector2f clickPos;

@@ -79,6 +79,29 @@ void OutlineButton::draw(std::shared_ptr<sf::RenderWindow> window, SceneInfo inf
     sf::VertexArray outerBox(sf::LineStrip, 5);
     sf::VertexArray innerBox(sf::LineStrip, 5);
 
+    //--------------------------------------------------------------------------------
+    // Set button color.
+    
+    for (int i = 0; i < 5; i++) {
+
+        outerBox[i].color = idleColor;
+        innerBox[i].color = idleColor;
+
+    }
+
+    if (clickLock) {
+
+        for (int i = 0; i < 5; i++) {
+
+            outerBox[i].color = clickedColor;
+            innerBox[i].color = clickedColor;
+
+        }
+
+    }
+
+    //--------------------------------------------------------------------------------
+
     float currentScale = (scaleAmt - 1) * hoverVal + 1;
 
     float rix = locPos.x + dims.x * 0.5 + (dims.x * 0.5 / currentScale);
