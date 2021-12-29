@@ -19,7 +19,7 @@ void Profiler::addMark(std::string name) {
 		marks.push_back(ProfilerMark(timeSinceMark, name));
 
 		// Update the timeMark to the new mark.
-		timeMark = high_resolution_clock::now();
+		timeMark = std::chrono::high_resolution_clock::now();
 
 	}
 

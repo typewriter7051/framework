@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <math.h>
 #include "nn.h"
 
 //================================================================================
@@ -29,7 +30,7 @@ std::vector<Neuron*> NeuralNetwork::getOutputs() {
 std::vector<Neuron*> NeuralNetwork::getArray(unsigned int start, unsigned int end) {
 
 	std::vector<Neuron*> temp(end - start + 1);
-	
+
 	for (int i = 0; i <= end - start; i++) {
 
 		temp.at(i) = &neurons.at(start + i);

@@ -1,6 +1,7 @@
 #include "neuron.h"
 #include <random>
 #include <time.h>
+#include <memory>
 
 // Static member definition.
 unsigned int Neuron::idCounter = 0;
@@ -113,7 +114,7 @@ void Neuron::setDone() {
 }
 
 void Neuron::setupAverageConnections(float min, float max) {
-	
+
 	std::mt19937 rng;
 	std::unique_ptr<std::uniform_real_distribution<float>> dis;
 	dis = std::make_unique<std::uniform_real_distribution<float>>(min, max);

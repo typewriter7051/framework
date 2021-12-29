@@ -10,7 +10,7 @@ public:
 
 	ProfilerMark() {}
 	ProfilerMark(double v, std::string n) {
-	
+
 		value = v;
 		name = n;
 
@@ -53,6 +53,6 @@ private:
 	//--------------------------------------------------------------------------------
 
 	// Initial time mark.
-	std::chrono::steady_clock::time_point timeMark;
+	std::chrono::time_point<std::chrono::high_resolution_clock> timeMark;
 
 };
