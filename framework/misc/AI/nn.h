@@ -57,6 +57,10 @@ private:
 
 	float getCostP(std::vector<float>* foutputs);
 
+	float findMinAV(Neuron* neuron);
+
+	void getSamplePoints(Neuron* neuron, std::vector<float>* centroid, std::vector<float>* samplePoints, std::ifstream& file);
+
 	// Runs the neural network without resetting input values.
 	std::vector<float> runNeuralNetwork();
 
