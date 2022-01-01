@@ -46,6 +46,8 @@ int main() {
 
     std::vector<float> outputs = nn.runNeuralNetwork(&inputs);
 
+    //for (float f : inputs) std::cout << f << std::endl;
+
     for (int i = 0; i < 44; i++) nn.runNeuralNetwork(&inputs);
 
     profiler.addMark("nn run time");
