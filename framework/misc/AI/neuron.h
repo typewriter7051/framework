@@ -19,37 +19,7 @@ public:
 
 	unsigned int getID();
 
-	unsigned int getNumConnections();
-
 	std::vector<Neuron*> getConnections();
-
-	float getBias();
-	void setBias(float b);
-
-	void setValue(float f);
-
-	void setUndone();
-	void setDone();
-
-	// Randomizes weights.
-	void setupAverageConnections(float min, float max);
-
-	void setConnections(std::vector<float> values, float strength);
-
-	//--------------------------------------------------------------------------------
-	// File handling.
-
-	void saveConnectionsStatus(std::ofstream* file);
-
-	//--------------------------------------------------------------------------------
-	// Misc.
-
-	void addConnection(Neuron* n);
-	void addConnection(Neuron* n, float w);
-
-	void clearValues();
-
-	static void resetIDCounter();
 
 private:
 
