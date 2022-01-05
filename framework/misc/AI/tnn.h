@@ -1,4 +1,5 @@
 #include "nn.h"
+#include "tneuron.h"
 
 class TrainingNeuralNetwork : public NeuralNetwork {
 public:
@@ -9,7 +10,7 @@ public:
 
 	float getCost(std::vector<float>* finputs, std::vector<float>* foutputs);
 
-	void trainNeuralNetwork(std::string fileName, Neuron* neuron, unsigned int sampleSize, int minRes);
+	void trainNeuralNetwork(std::string fileName, TrainingNeuron* neuron, unsigned int sampleSize, int minRes);
 
 	//--------------------------------------------------------------------------------
 	// Neuron setup.
@@ -46,21 +47,23 @@ private:
 
 	float getCostP(std::vector<float>* foutputs);
 
-	float findMinAV(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes);
+	float findMinAV(TrainingNeuron* neuron, TrainingNeuralNetwork& loadState, int minRes);
 
 	void getSamplePoints(Neuron* neuron, std::vector<float>* centroid, std::vector<float>* samplePoints, int minRes, std::ifstream& file);
 
-	void readState(TrainingNeuralNetwork* nn, std::ifstream* trainFile);
+	void readState(NeuralNetwork* nn, std::ifstream* trainFile);
 	void readState(TrainingNeuralNetwork* nn, TrainingNeuralNetwork* on);
 
 	// Used for recording the nn state for training.
 	bool recordMode;
 	std::ofstream recordFile;
 
+	std::vector<TrainingNeuron> neurons;
+
 	//--------------------------------------------------------------------------------
 	// Training.
 
-	TrainingNeuralNetwork loadState;
+	NeuralNetwork loadState;
 	unsigned int sampleSize;
 	std::vector<float> centroid;
 

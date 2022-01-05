@@ -200,7 +200,7 @@ std::vector<float> TrainingNeuralNetwork::captureNeuralNetwork(std::vector<float
 
 //--------------------------------------------------------------------------------
 
-void TrainingNeuralNetwork::readState(TrainingNeuralNetwork* nn, std::ifstream* trainFile) {
+void TrainingNeuralNetwork::readState(NeuralNetwork* nn, std::ifstream* trainFile) {
 
 	// stupid fucking piece of shit one liner.
 	//trainFile->read((char*) nn->neurons.data(), sizeof(float) * nn->neurons.size());
@@ -215,8 +215,6 @@ void TrainingNeuralNetwork::readState(TrainingNeuralNetwork* nn, std::ifstream* 
 	}
 
 }
-
-//--------------------------------------------------------------------------------
 
 void TrainingNeuralNetwork::readState(TrainingNeuralNetwork* nn, TrainingNeuralNetwork* on) {
 
@@ -236,7 +234,7 @@ void TrainingNeuralNetwork::readState(TrainingNeuralNetwork* nn, TrainingNeuralN
 
 }
 
-float TrainingNeuralNetwork::findMinAV(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes) {
+float TrainingNeuralNetwork::findMinAV(TrainingNeuron* neuron, TrainingNeuralNetwork& loadState, int minRes) {
 
 	float minCost = 1000;
 	float minCostAV = 0;
@@ -314,7 +312,7 @@ void TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, std::vector<float>* 
 }
 
 void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
-	Neuron* neuron, unsigned int sampleSize, int minRes) {
+	TrainingNeuron* neuron, unsigned int sampleSize, int minRes) {
 
 	std::ifstream file;
 	unsigned int is, os, hn;

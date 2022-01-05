@@ -33,10 +33,12 @@ protected:
 	// Establishes the list of neurons given a set number of input, output, and hidden neurons.
 	void setNeurons(unsigned int i, unsigned int o, unsigned int h);
 
-	// Holds all the neurons including inputs and outputs.
-	std::vector<Neuron> neurons;
-
 	// Pointers to the input and output neurons within the previous list.
 	std::vector<Neuron*> inputs, outputs;
+
+private:
+
+	// Holds all the neurons including inputs and outputs.
+	std::vector<Neuron> neurons;
 
 };

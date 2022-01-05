@@ -1,4 +1,5 @@
 #include "tneuron.h"
+#include <random>
 
 TrainingNeuron::TrainingNeuron() {
 
@@ -14,29 +15,9 @@ TrainingNeuron::TrainingNeuron() {
 //================================================================================
 // Getters & setters.
 
-unsigned int TrainingNeuron::getID() {
-
-	return ID;
-
-}
-
 unsigned int TrainingNeuron::getNumConnections() {
 
 	return ncs.size();
-
-}
-
-std::vector<Neuron*> TrainingNeuron::getConnections() {
-
-	std::vector<Neuron*> returnList;
-
-	for (NeuralConnection nc : ncs) {
-
-		returnList.push_back(nc.prevNeuron);
-
-	}
-
-	return returnList;
 
 }
 
@@ -49,28 +30,6 @@ float TrainingNeuron::getBias() {
 void TrainingNeuron::setBias(float b) {
 
 	bias = b;
-
-}
-
-void TrainingNeuron::setValue(float f) {
-
-	av = f;
-
-	// Ensures that the neuron directly returns activation value without calling connected neurons.
-	finished = true;
-
-}
-
-// Clears finished status for next iteration.
-void TrainingNeuron::setUndone() {
-
-	finished = false;
-
-}
-
-void TrainingNeuron::setDone() {
-
-	finished = true;
 
 }
 
@@ -129,26 +88,8 @@ void TrainingNeuron::saveConnectionsStatus(std::ofstream* file) {
 //================================================================================
 // Misc.
 
-void Neuron::addConnection(Neuron* n) {
-
-	ncs.push_back(NeuralConnection(n));
-
-}
-
-void Neuron::addConnection(Neuron* n, float w) {
-
-	ncs.push_back(NeuralConnection(n, w));
-
-}
-
-void Neuron::clearValues() {
+void TrainingNeuron::clearValues() {
 
 	values.clear();
-
-}
-
-void Neuron::resetIDCounter() {
-
-	idCounter = 0;
 
 }

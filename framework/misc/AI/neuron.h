@@ -21,7 +21,17 @@ public:
 
 	std::vector<Neuron*> getConnections();
 
-private:
+	void setValue(float f);
+
+	void setDone();
+	void setUndone();
+
+	void addConnection(Neuron* n);
+	void addConnection(Neuron* n, float w);
+
+	static void resetIDCounter();
+
+protected:
 
 	void applyNonlinear();
 

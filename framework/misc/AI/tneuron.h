@@ -13,11 +13,6 @@ public:
     float getBias();
 	void setBias(float b);
 
-	void setValue(float f);
-
-	void setUndone();
-	void setDone();
-
 	void setConnections(std::vector<float> values, float strength);
 
     // Randomizes weights.
@@ -31,12 +26,7 @@ public:
     //--------------------------------------------------------------------------------
 	// Misc.
 
-	void addConnection(Neuron* n);
-	void addConnection(Neuron* n, float w);
-
 	void clearValues();
-
-	static void resetIDCounter();
 
 private:
 

@@ -1,5 +1,4 @@
 #include "neuron.h"
-#include <random>
 #include <time.h>
 #include <memory>
 
@@ -17,6 +16,12 @@ Neuron::Neuron() {
 	av = 0;
 	finished = false;
 	bias = 0;
+
+}
+
+unsigned int Neuron::getID() {
+
+	return ID;
 
 }
 
@@ -50,8 +55,62 @@ float Neuron::getValue() {
 
 }
 
+std::vector<Neuron*> Neuron::getConnections() {
+
+	std::vector<Neuron*> returnList;
+
+	for (NeuralConnection nc : ncs) {
+
+		returnList.push_back(nc.prevNeuron);
+
+	}
+
+	return returnList;
+
+}
+
+void Neuron::setValue(float f) {
+
+	av = f;
+
+	// Ensures that the neuron directly returns activation value without calling connected neurons.
+	finished = true;
+
+}
+
+void Neuron::setDone() {
+
+	finished = true;
+
+}
+
+// Clears finished status for next iteration.
+void Neuron::setUndone() {
+
+	finished = false;
+
+}
+
+void Neuron::addConnection(Neuron* n) {
+
+	ncs.push_back(NeuralConnection(n));
+
+}
+
+void Neuron::addConnection(Neuron* n, float w) {
+
+	ncs.push_back(NeuralConnection(n, w));
+
+}
+
 void Neuron::applyNonlinear() {
 
 	av = tanh(av);
+
+}
+
+void Neuron::resetIDCounter() {
+
+	idCounter = 0;
 
 }
