@@ -15,6 +15,8 @@ public:
 	//--------------------------------------------------------------------------------
 	// Neuron setup.
 
+	TrainingNeuron* getNeuron(unsigned int index);
+
 	void setNeurons(unsigned int i, unsigned int o, unsigned int h) {
 
 		NeuralNetwork::setNeurons(i, o, h);
@@ -43,7 +45,7 @@ public:
 private:
 
 	// Runs the neural network without resetting input values.
-	std::vector<float> runNeuralNetwork();
+	std::vector<float> rerunNeuralNetwork();
 
 	float getCostP(std::vector<float>* foutputs);
 

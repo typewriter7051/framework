@@ -42,7 +42,7 @@ float TrainingNeuralNetwork::getCost(std::vector<float>* finputs, std::vector<fl
 
 float TrainingNeuralNetwork::getCostP(std::vector<float>* foutputs) {
 
-	std::vector<float> actualOutput = runNeuralNetwork();
+	std::vector<float> actualOutput = rerunNeuralNetwork();
 
 	if (foutputs->size() != actualOutput.size()) {
 
@@ -69,7 +69,7 @@ float TrainingNeuralNetwork::getCostP(std::vector<float>* foutputs) {
 }
 
 // Runs the neural network without resetting input values.
-std::vector<float> TrainingNeuralNetwork::runNeuralNetwork() {
+std::vector<float> TrainingNeuralNetwork::rerunNeuralNetwork() {
 
 	// Set inputs to be done.
 	for (Neuron* n : inputs) n->setDone();
@@ -96,6 +96,12 @@ std::vector<float> TrainingNeuralNetwork::runNeuralNetwork() {
 
 //================================================================================
 // Setters.
+
+TrainingNeuron* TrainingNeuralNetwork::getNeuron(unsigned int index) {
+
+	return &neurons.at(index);
+
+}
 
 void TrainingNeuralNetwork::setupWeights(float min, float max) {
 
