@@ -139,7 +139,7 @@ void TrainingNeuralNetwork::saveToFile(std::string fileName) {
 	//file << outputs.size() << "\n";
 	//file << neurons.size() - inputs.size() - outputs.size() << "\n";
 
-	for (Neuron n : neurons) {
+	for (TrainingNeuron n : neurons) {
 
 		n.saveConnectionsStatus(&file);
 
@@ -200,7 +200,7 @@ std::vector<float> TrainingNeuralNetwork::captureNeuralNetwork(std::vector<float
 
 //--------------------------------------------------------------------------------
 
-void TrainingNeuralNetwork::readState(NeuralNetwork* nn, std::ifstream* trainFile) {
+void TrainingNeuralNetwork::readState(TrainingNeuralNetwork* nn, std::ifstream* trainFile) {
 
 	// stupid fucking piece of shit one liner.
 	//trainFile->read((char*) nn->neurons.data(), sizeof(float) * nn->neurons.size());
@@ -234,7 +234,7 @@ void TrainingNeuralNetwork::readState(TrainingNeuralNetwork* nn, TrainingNeuralN
 
 }
 
-float TrainingNeuralNetwork::findMinAV(TrainingNeuron* neuron, TrainingNeuralNetwork& loadState, int minRes) {
+float TrainingNeuralNetwork::findMinAV(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes) {
 
 	float minCost = 1000;
 	float minCostAV = 0;
@@ -263,8 +263,7 @@ float TrainingNeuralNetwork::findMinAV(TrainingNeuron* neuron, TrainingNeuralNet
 
 //--------------------------------------------------------------------------------
 
-void TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, std::vector<float>* centroid,
-	std::vector<float>* samplePoints, int minRes, std::ifstream& file) {
+void TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes, std::ifstream& file) {
 
 	unsigned int numSamples = 0;
 
@@ -315,7 +314,8 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
 	TrainingNeuron* neuron, unsigned int sampleSize, int minRes) {
 
 	std::ifstream file;
-	unsigned int is, os, hn;
+
+	TrainingNeuralNetwork loadState;
 
 	// Read the nn structure data from partner file.
 	std::string nnFile;
@@ -334,8 +334,7 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
 
 	loadState.loadFromFile(fileName);
 
-	// List to hold expected outputs of each state.
-	std::vector<float> exout(os);
+	exout.resize(os);
 
 	while (!file.eof()) {
 
@@ -344,7 +343,7 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
 		samplePoints.clear();
 
 		// Retrives all the neuron sample points and average centroid.
-		getSamplePoints(neuron, &centroid, &samplePoints, minRes, file);
+		getSamplePoints(neuron, loadState, minRes, file);
 
 		//---Then calculate plane of best fit and merge with previous plane of best fit.---
 

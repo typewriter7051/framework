@@ -47,11 +47,11 @@ private:
 
 	float getCostP(std::vector<float>* foutputs);
 
-	float findMinAV(TrainingNeuron* neuron, TrainingNeuralNetwork& loadState, int minRes);
+	float findMinAV(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes);
 
-	void getSamplePoints(Neuron* neuron, std::vector<float>* centroid, std::vector<float>* samplePoints, int minRes, std::ifstream& file);
+	void getSamplePoints(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes, std::ifstream& file);
 
-	void readState(NeuralNetwork* nn, std::ifstream* trainFile);
+	void readState(TrainingNeuralNetwork* nn, std::ifstream* trainFile);
 	void readState(TrainingNeuralNetwork* nn, TrainingNeuralNetwork* on);
 
 	// Used for recording the nn state for training.
@@ -63,9 +63,13 @@ private:
 	//--------------------------------------------------------------------------------
 	// Training.
 
-	NeuralNetwork loadState;
 	unsigned int sampleSize;
 	std::vector<float> centroid;
+
+	unsigned int is, os, hn;
+
+	// List to hold expected outputs of each state.
+	std::vector<float> exout;
 
 	// List of all the points containing the inputs (child nodes)
 	// and outputs (neuron AV) to form a plane of best fit.
