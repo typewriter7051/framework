@@ -2,30 +2,29 @@
 
 #include "../../ui.h"
 
-struct textInfo {
+struct TextState {
 
-	sf::Text text;
+	sf::Font font;
+	unsigned int charSize;
+	sf::Color color;
+	sf::Vector2f locPos;
+	bool centered;
 
-	sf::Vector2f scenePos;
-	bool centered = false;
+	TextState() {
 
-	void setup(int s, sf::Color c, sf::Vector2f p, sf::String st, bool t) {
-
-		text.setCharacterSize(s);
-		text.setFillColor(c);
-		scenePos = p;
-		text.setString(st);
-		centered = t;
+		color = sf::Color::White;
+		charSize = 14;
+		centered = false;
 
 	}
 
-	textInfo() {
+	void setup(sf::Font f, int s, sf::Color c, sf::Vector2f p, bool t) {
 
-		text.setCharacterSize(14);
-		text.setFillColor(sf::Color::White);
-		scenePos = sf::Vector2f(5, 10);
-		text.setString("default string");
-		centered = false;
+		font = f;
+		charSize = s;
+		color = c;
+		locPos = p;
+		centered = t;
 
 	}
 
@@ -34,22 +33,34 @@ struct textInfo {
 class DefaultText : public Interactable {
 public:
 
-	sf::Font font;
+	TextState state;
+	sf::Text text;
 
 	DefaultText() {
+
+		text.setCharacterSize(14);
+		text.setFillColor(sf::Color::White);
+		state.locPos = sf::Vector2f(5, 10);
+		text.setString("default string");
+		state.centered = false;
 
 	}
 
 	DefaultText(Scene* scene) {
 
-		font.loadFromMemory(Montserrat_Light_ttf, Montserrat_Light_ttf_len);
 		scene->addUIElement(std::shared_ptr<Interactable>(this));
 
 	}
 
-	void addText(textInfo ti);
+	void setup(TextState* s, sf::String st) {
 
-	void loadFont(const void* data, size_t size) { font.loadFromMemory(data, size); }
+		state = *s;
+		text.setFont(state.font);
+		text.setCharacterSize(s->charSize);
+		text.setFillColor(s->color);
+		text.setString(st);
+
+	}
 
 	void getInput(MouseState& ms, double timePassed, SceneInfo info) override;
 
@@ -57,7 +68,6 @@ public:
 
 private:
 
-	std::vector<textInfo> texts;
 
 };
 

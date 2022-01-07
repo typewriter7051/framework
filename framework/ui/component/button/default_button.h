@@ -18,7 +18,7 @@ public:
 	void setIdleColor(sf::Color c) { idleColor = c; }
 	void setClickedColor(sf::Color c) { clickedColor = c; }
 
-	void getInput(MouseState& ms, double timePased, SceneInfo info) override;
+	void getInput(MouseState& ms, double timePassed, SceneInfo info) override;
 
 	void draw(std::shared_ptr<sf::RenderWindow> window, SceneInfo info) override;
 

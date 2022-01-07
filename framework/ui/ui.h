@@ -46,9 +46,9 @@ public:
 
 	bool shouldHideMouse() { return hideMouse; }
 
-	virtual void getInput(MouseState &, double, SceneInfo) = 0;
+	virtual void getInput(MouseState&, double, SceneInfo) {}
 
-	virtual void draw(std::shared_ptr<sf::RenderWindow> window, SceneInfo) = 0;
+	virtual void draw(std::shared_ptr<sf::RenderWindow> window, SceneInfo) {}
 
 	virtual void eventHandle(sf::Event& event) {}
 

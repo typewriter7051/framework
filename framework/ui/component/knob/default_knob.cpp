@@ -65,7 +65,6 @@ void DefaultKnob::getInput(MouseState& ms, double timePassed, SceneInfo info) {
     if (isLifted) {
 
         value -= (ms.pos.y - clickPos.y) * sensitivity;
-        //prevMousePos = ms.pos;
 
         if (value < 0) value = 0;
         if (value > 1) value = 1;
