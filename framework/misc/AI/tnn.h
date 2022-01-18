@@ -16,12 +16,9 @@ public:
 	// Neuron setup.
 
 	TrainingNeuron* getNeuron(unsigned int index);
+	std::vector<Neuron*> getArray(unsigned int start, unsigned int end) override;
 
-	void setNeurons(unsigned int i, unsigned int o, unsigned int h) {
-
-		NeuralNetwork::setNeurons(i, o, h);
-
-	}
+	void setNeurons(unsigned int i, unsigned int o, unsigned int h) override;
 
 	// Randomizes the weights.
 	void setupWeights(float min, float max);
@@ -39,6 +36,7 @@ public:
 	// File handling.
 
 	void saveToFile(std::string fileName);
+	void loadFromFile(std::string fileName) override;
 
 	//void exportToFile(std::string fileName, bool IDComp, );
 

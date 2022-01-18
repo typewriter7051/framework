@@ -17,8 +17,8 @@ public:
 	std::vector<Neuron*> getInputs();
 	std::vector<Neuron*> getOutputs();
 
-	std::vector<Neuron*> getArray(unsigned int start, unsigned int end);
 	Neuron* getNeuron(unsigned int index);
+	virtual std::vector<Neuron*> getArray(unsigned int start, unsigned int end);
 
 	// Runs the neural network and returns the outputs in a list.
 	std::vector<float> runNeuralNetwork(std::vector<float>* finputs);
@@ -26,12 +26,12 @@ public:
 	//--------------------------------------------------------------------------------
 	// File handling.
 
-	void loadFromFile(std::string fileName);
+	virtual void loadFromFile(std::string fileName);
 
 protected:
 
 	// Establishes the list of neurons given a set number of input, output, and hidden neurons.
-	void setNeurons(unsigned int i, unsigned int o, unsigned int h);
+	virtual void setNeurons(unsigned int i, unsigned int o, unsigned int h);
 
 	// Pointers to the input and output neurons within the previous list.
 	std::vector<Neuron*> inputs, outputs;

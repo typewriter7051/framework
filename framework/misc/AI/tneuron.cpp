@@ -3,12 +3,8 @@
 
 TrainingNeuron::TrainingNeuron() {
 
-	ID = idCounter;
-	idCounter++;
-
-	av = 0;
-	finished = false;
-	bias = 0;
+	// No need to do ID handling or anything since it's
+	// included in the parent class' constructor.
 
 }
 

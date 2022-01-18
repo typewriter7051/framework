@@ -103,6 +103,37 @@ TrainingNeuron* TrainingNeuralNetwork::getNeuron(unsigned int index) {
 
 }
 
+std::vector<Neuron*> TrainingNeuralNetwork::getArray(unsigned int start, unsigned int end) {
+
+	std::vector<Neuron*> temp(end - start + 1);
+
+	for (int i = 0; i <= end - start; i++) {
+
+		temp.at(i) = &neurons.at(start + i);
+
+	}
+
+	return temp;
+
+}
+
+// Sets up the input and output nodes.
+void TrainingNeuralNetwork::setNeurons(unsigned int numInputs, unsigned int numOutputs, unsigned int h) {
+
+	// Completely clear the network and reset neuron ID counter.
+	neurons.clear();
+	inputs.clear();
+	outputs.clear();
+	Neuron::resetIDCounter();
+
+	// Reset and re-initialize the input/output pointer lists.
+	neurons.resize(numInputs + numOutputs + h);
+
+	for (int i = 0; i < numInputs; i++) { inputs.push_back(&neurons[i]); }
+	for (int o = 0; o < numOutputs; o++) { outputs.push_back(&neurons[numInputs + o]); }
+
+}
+
 void TrainingNeuralNetwork::setupWeights(float min, float max) {
 
 	for (int n = 0; n < neurons.size(); n++) {
@@ -125,38 +156,8 @@ void TrainingNeuralNetwork::fullyConnectNeurons(std::vector<Neuron*> layerB, std
 
 }
 
-void TrainingNeuralNetwork::saveToFile(std::string fileName) {
-
-	fileName += ".nn";
-
-	std::ofstream file;
-	file.open(fileName, std::ios::out | std::ios::binary);
-
-	unsigned int is, os, hn;
-	is = inputs.size();
-	os = outputs.size();
-	hn = neurons.size() - inputs.size() - outputs.size();
-
-	file.write((char*)&is, sizeof(int));
-	file.write((char*)&os, sizeof(int));
-	file.write((char*)&hn, sizeof(int));
-
-	//file << inputs.size()  << "\n";
-	//file << outputs.size() << "\n";
-	//file << neurons.size() - inputs.size() - outputs.size() << "\n";
-
-	for (TrainingNeuron n : neurons) {
-
-		n.saveConnectionsStatus(&file);
-
-	}
-
-	file.close();
-
-}
-
 //================================================================================
-// Recording.
+// Recording and Training.
 
 void TrainingNeuralNetwork::startRecording(std::string fileName) {
 
@@ -431,6 +432,80 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
 
 		float newBias = neuron->getBias() * (1 - strength) + bias * strength;
 		neuron->setBias(newBias);
+
+	}
+
+	file.close();
+
+}
+
+//================================================================================
+// File handling.
+
+void TrainingNeuralNetwork::loadFromFile(std::string fileName) {
+
+	fileName += ".nn";
+
+	std::ifstream file;
+	file.open(fileName, std::ios::binary);
+
+	unsigned int is, os, hn;
+	//file >> is >> os >> hn;
+
+	file.read((char*)&is, sizeof(unsigned int));
+	file.read((char*)&os, sizeof(unsigned int));
+	file.read((char*)&hn, sizeof(unsigned int));
+
+	setNeurons(is, os, hn);
+
+	for (int n = 0; n < neurons.size(); n++) {
+
+		unsigned int numConnections;
+
+		//file >> numConnections;
+		file.read((char*)&numConnections, sizeof(int));
+
+		for (int c = 0; c < numConnections; c++) {
+
+			unsigned int nID;
+			//file >> nID;
+			file.read((char*)&nID, sizeof(unsigned int));
+
+			float nWeight;
+			//file >> nWeight;
+			file.read((char*)&nWeight, sizeof(float));
+
+			neurons[n].addConnection(&neurons[nID], nWeight);
+
+		}
+
+	}
+
+}
+
+void TrainingNeuralNetwork::saveToFile(std::string fileName) {
+
+	fileName += ".nn";
+
+	std::ofstream file;
+	file.open(fileName, std::ios::out | std::ios::binary);
+
+	unsigned int is, os, hn;
+	is = inputs.size();
+	os = outputs.size();
+	hn = neurons.size() - inputs.size() - outputs.size();
+
+	file.write((char*)&is, sizeof(int));
+	file.write((char*)&os, sizeof(int));
+	file.write((char*)&hn, sizeof(int));
+
+	//file << inputs.size()  << "\n";
+	//file << outputs.size() << "\n";
+	//file << neurons.size() - inputs.size() - outputs.size() << "\n";
+
+	for (TrainingNeuron n : neurons) {
+
+		n.saveConnectionsStatus(&file);
 
 	}
 
