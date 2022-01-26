@@ -70,12 +70,17 @@ void TrainingNeuron::saveConnectionsStatus(std::ofstream* file) {
 	int size = ncs.size();
 	file->write((char*) &size, sizeof(int));
 
+	//std::cout << "\nSize: " << size << std::endl;
+
 	for (NeuralConnection nc : ncs) {
 
 		//*file << nc.prevNeuron->getID() << "\n" << nc.weight << "\n";
 		unsigned int ID = nc.prevNeuron->getID();
 		file->write((char*) &ID, sizeof(unsigned int));
 		file->write((char*) &nc.weight, sizeof(float));
+
+		//std::cout << "to: " << ID << std::endl;
+		//std::cout << "weight: " << nc.weight << std::endl;
 
 	}
 

@@ -212,6 +212,7 @@ void TrainingNeuralNetwork::readState(TrainingNeuralNetwork* nn, std::ifstream* 
 	// stupid fucking piece of shit one liner.
 	//trainFile->read((char*) nn->neurons.data(), sizeof(float) * nn->neurons.size());
 
+	// BUG IS SOMEWHERE HERE!!!
 	for (int neuron = 0; neuron < nn->neurons.size(); neuron++) {
 
 		float av;
@@ -270,7 +271,7 @@ float TrainingNeuralNetwork::findMinAV(Neuron* neuron, TrainingNeuralNetwork& lo
 
 //--------------------------------------------------------------------------------
 
-void TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes, std::ifstream& file) {
+bool TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes, std::ifstream& file) {
 
 	unsigned int numSamples = 0;
 
@@ -283,7 +284,7 @@ void TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, TrainingNeuralNetwor
 		if (file.eof()) {
 
 			file.close();
-			return;
+			return false;
 
 		}
 
@@ -315,13 +316,15 @@ void TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, TrainingNeuralNetwor
 
 	}
 
+	return true;
+
 }
 
 void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
-	TrainingNeuron* neuron, unsigned int sampleSize, int minRes) {
+	TrainingNeuron* neuron, unsigned int samSize, int minRes) {
 
+	sampleSize = samSize;
 	std::ifstream file;
-
 	TrainingNeuralNetwork loadState;
 
 	// Read the nn structure data from partner file.
@@ -350,7 +353,8 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
 		samplePoints.clear();
 
 		// Retrives all the neuron sample points and average centroid.
-		getSamplePoints(neuron, loadState, minRes, file);
+		if (!getSamplePoints(neuron, loadState, minRes, file))
+			break;
 
 		//---Then calculate plane of best fit and merge with previous plane of best fit.---
 
@@ -425,8 +429,8 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
 			globalIndex++;
 
 		}
-		// Now finally merge the plane of best fit with current weights/bias.
 
+		// Now finally merge the plane of best fit with current weights/bias.
 		float strength = 1;
 		neuron->setConnections(weights, strength);
 
@@ -465,6 +469,8 @@ void TrainingNeuralNetwork::loadFromFile(std::string fileName) {
 		//file >> numConnections;
 		file.read((char*)&numConnections, sizeof(int));
 
+		//std::cout << "\nSize: " << numConnections << std::endl;
+
 		for (int c = 0; c < numConnections; c++) {
 
 			unsigned int nID;
@@ -475,10 +481,13 @@ void TrainingNeuralNetwork::loadFromFile(std::string fileName) {
 			//file >> nWeight;
 			file.read((char*)&nWeight, sizeof(float));
 
+			//std::cout << "to: " << nID << std::endl;
+			//std::cout << "weight: " << nWeight << std::endl;
+
 			neurons[n].addConnection(&neurons[nID], nWeight);
 
 		}
-
+		
 	}
 
 }

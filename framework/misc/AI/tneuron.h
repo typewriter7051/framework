@@ -1,4 +1,23 @@
+#pragma once
 #include "neuron.h"
+
+namespace AI {
+
+	class NeuronPos {
+	public:
+
+		float x, y;
+
+		void move(float a, float b) {
+
+			x += a;
+			y += b;
+
+		}
+
+	};
+
+}
 
 class TrainingNeuron : public Neuron {
 public:
@@ -7,6 +26,9 @@ public:
 
     //--------------------------------------------------------------------------------
 	// Getters and setters.
+
+	AI::NeuronPos getPos() { return pos; }
+	void setPos(AI::NeuronPos p) { pos = p; }
 
     unsigned int getNumConnections();
 
@@ -30,6 +52,6 @@ public:
 
 private:
 
-
+	AI::NeuronPos pos;
 
 };

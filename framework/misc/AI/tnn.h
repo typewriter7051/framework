@@ -1,3 +1,4 @@
+#pragma once
 #include "nn.h"
 #include "tneuron.h"
 
@@ -49,7 +50,7 @@ private:
 
 	float findMinAV(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes);
 
-	void getSamplePoints(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes, std::ifstream& file);
+	bool getSamplePoints(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes, std::ifstream& file);
 
 	void readState(TrainingNeuralNetwork* nn, std::ifstream* trainFile);
 	void readState(TrainingNeuralNetwork* nn, TrainingNeuralNetwork* on);
