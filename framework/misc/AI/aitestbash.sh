@@ -1,1 +1,2 @@
-g++ *.cpp -o myprogram
+g++ *.cpp -o aitest
+./aitest

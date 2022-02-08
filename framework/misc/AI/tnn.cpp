@@ -347,6 +347,9 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
 
 	exout.resize(os);
 
+	std::cout << "\nFile loading success!\n";
+	std::cout << "Starting read nn states phase.\n\n";
+
 	while (!file.eof()) {
 
 		// The +1 is for including the neuron output (av) value.
@@ -356,6 +359,9 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
 		// Retrives all the neuron sample points and average centroid.
 		if (!getSamplePoints(neuron, loadState, minRes, file))
 			break;
+
+		std::cout << "\tSample points read.\n";
+		std::cout << "\tCalculating md plane of best fit.\n\n";
 
 		//---Then calculate plane of best fit and merge with previous plane of best fit.---
 
@@ -379,6 +385,8 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
 			float addedDist = 0;
 			float Sd = 0;
 			float b = 0;
+
+			std::cout << "\t\tCalculating sum.\n";
 
 			// Find sum of the distance from centroid in each axis
 			// (not including dependent axis)
@@ -408,6 +416,8 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
 
 				//================================================================================
 				//---Calculate optimal weights and merge them with average.---
+
+				std::cout << "\t\tFinding optimal weights.\n";
 
 				for (int n = 0; n < weights.size(); n++) {
 
