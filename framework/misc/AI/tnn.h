@@ -12,6 +12,8 @@ public:
 	float getCost(std::vector<float>* finputs, std::vector<float>* foutputs);
 
 	void trainNeuralNetwork(std::string fileName, TrainingNeuron* neuron, unsigned int sampleSize, int minRes);
+	
+	//Neuron* getNeuron(unsigned int index);
 
 	//--------------------------------------------------------------------------------
 	// Neuron setup.

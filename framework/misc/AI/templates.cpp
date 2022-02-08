@@ -10,6 +10,14 @@ TrainingNeuralNetwork createConvolutionalNetwork(int inputs, int outputs, int hi
 	int hiddenStart = inputs + outputs;
 	nn.setNeurons(inputs, outputs, hiddenNeurons);
 
+	// If there are no hidden neurons (why would anyone do this).
+	if (hiddenLayers == 0 || hidden == 0) {
+
+		nn.fullyConnectNeurons(nn.getOutputs(), nn.getInputs());
+		return nn;
+
+	}
+
 	// Connect the hidden neurons.
 	for (int l = 0; l < hiddenLayers - 1; l++) {
 

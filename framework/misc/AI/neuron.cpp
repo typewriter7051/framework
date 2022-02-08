@@ -1,6 +1,7 @@
 #include "neuron.h"
 #include <time.h>
 #include <memory>
+#include <cmath>
 
 // Static member definition.
 unsigned int Neuron::idCounter = 0;

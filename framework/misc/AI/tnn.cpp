@@ -1,3 +1,4 @@
+#include <cmath>
 #include "tnn.h"
 
 //================================================================================
@@ -487,7 +488,7 @@ void TrainingNeuralNetwork::loadFromFile(std::string fileName) {
 			neurons[n].addConnection(&neurons[nID], nWeight);
 
 		}
-		
+
 	}
 
 }
