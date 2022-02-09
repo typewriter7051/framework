@@ -272,6 +272,23 @@ float TrainingNeuralNetwork::findMinAV(Neuron* neuron, TrainingNeuralNetwork& lo
 
 //--------------------------------------------------------------------------------
 
+void somethingidk() {
+
+	std::vector<float> howMuchEachWeightShouldChange;
+
+	for (int s = 0; s < sampleSize; s++) {
+
+		readState();
+
+		getMinAV();
+
+		// Iterate through each child neuron and find weight change.
+
+
+	}
+
+}
+
 bool TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes, std::ifstream& file) {
 
 	unsigned int numSamples = 0;
