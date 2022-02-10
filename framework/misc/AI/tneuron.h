@@ -37,6 +37,7 @@ public:
 	void setBias(float b);
 
 	void setConnections(std::vector<float> values, float strength);
+	void addConnections(std::vector<float> values, float strength);
 
     // Randomizes weights.
 	void setupAverageConnections(float min, float max);

@@ -61,6 +61,23 @@ void TrainingNeuron::setConnections(std::vector<float> values, float strength) {
 
 }
 
+void TrainingNeuron::addConnections(std::vector<float> values, float strength) {
+
+	if (values.size() != ncs.size()) {
+
+		std::cout << "YOU STUPID";
+		return;
+
+	}
+
+	for (int val = 0; val < ncs.size(); val++) {
+
+		ncs[val].weight += values[val] * strength;
+
+	}
+
+}
+
 //================================================================================
 // File handling.
 

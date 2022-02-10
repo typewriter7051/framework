@@ -272,18 +272,34 @@ float TrainingNeuralNetwork::findMinAV(Neuron* neuron, TrainingNeuralNetwork& lo
 
 //--------------------------------------------------------------------------------
 
-void somethingidk() {
+// DOESNT TRAIN BIAS (output function always passes through origin).
+void nudgeWeights(TrainingNeuron* neuron, TrainingNeuralNetwork& loadState, std::ifstream& file) {
 
-	std::vector<float> howMuchEachWeightShouldChange;
+	// How much each weight should change.
+	std::vector<float> weightChange;
 
 	for (int s = 0; s < sampleSize; s++) {
 
-		readState();
+		// Read the next loadstate from file.
+		readState(&loadState, &file);
 
-		getMinAV();
+		float minAV = findMinAV(neuron, loadState, 20);
+
+		// Set the child neurons to be done first for optimization.
+		for (Neuron* n : neuron->getConnections()) childNeuron->setDone();
+
+		float AV = neuron->getValue();
 
 		// Iterate through each child neuron and find weight change.
+		for (Neuron* childNeuron : neuron->getConnections()) {
 
+			float influence = childNeuron->getValue();
+
+			weightChange.push_back(influence * (minAV - AV));
+
+		}
+
+		neuron->addConnections(weightChange, 0.1);
 
 	}
 
