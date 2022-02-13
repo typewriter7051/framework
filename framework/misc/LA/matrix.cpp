@@ -73,8 +73,8 @@ bool Matrix::checkInBounds(unsigned short yp, unsigned short xp) {
 
 bool sameDimensions(Matrix &a, Matrix &b) {
 
-    unsigned short adim = a.getDimensions();
-    unsigned short bdim = b.getDimensions();
+    unsigned short adim[] = a.getDimensions();
+    unsigned short bdim[] = b.getDimensions();
 
     if (adim[0] == bdim[0] && adim[1] == bdim[1])
         return true;
@@ -85,6 +85,18 @@ bool sameDimensions(Matrix &a, Matrix &b) {
         return false;
 
     }
+
+}
+
+bool isSquare(Matrix &a) {
+
+    unsigned short dims[] = a.getDimensions();
+
+    if (a[0] == a[1])
+        return true;
+
+    else
+        return false;
 
 }
 
@@ -168,7 +180,7 @@ Matrix multiply(Matrix &a, Matrix &b) {
 
 Matrix transpose(Matrix &a) {
 
-    if (a.getDimensions()[0] != a.getDimensions()[1]) {
+    if (!isSquare(a)) {
 
         std::cout << "\nDIMENSIONS DO NOT MATCH!\n";
         return;

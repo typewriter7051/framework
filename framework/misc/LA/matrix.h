@@ -26,6 +26,7 @@ private:
 // Basic operations.
 
 bool sameDimensions(Matrix &a, Matrix &b);
+bool isSquare(Matrix &a);
 
 Matrix add(Matrix &a, Matrix &b);
 Matrix subtract(Matrix &a, Matrix &b);
