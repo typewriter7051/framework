@@ -1,5 +1,6 @@
 #include "tneuron.h"
 #include <random>
+#include <cmath> // For inverseNonlinear()
 
 TrainingNeuron::TrainingNeuron() {
 
@@ -23,9 +24,9 @@ float TrainingNeuron::getBias() {
 
 }
 
-void TrainingNeuron::setBias(float b) {
+void TrainingNeuron::setBias(float b, float strength) {
 
-	bias = b;
+	bias = strength * b + (1 - strength) * bias;
 
 }
 
@@ -109,5 +110,11 @@ void TrainingNeuron::saveConnectionsStatus(std::ofstream* file) {
 void TrainingNeuron::clearValues() {
 
 	values.clear();
+
+}
+
+static float TrainingNeuron::inverseNonlinear(float v) {
+
+	return atanh(v);
 
 }

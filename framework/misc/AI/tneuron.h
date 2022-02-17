@@ -52,6 +52,8 @@ public:
 
 	void clearValues();
 
+	static float inverseNonlinear(float v);
+
 private:
 
 	AI::NeuronPos pos;

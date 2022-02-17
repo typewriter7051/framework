@@ -243,6 +243,8 @@ void TrainingNeuralNetwork::readState(TrainingNeuralNetwork* nn, TrainingNeuralN
 
 }
 
+// NOTE: Returns raw value BEFORE nonlinear function is applied. This is to
+// help the backpropogation algorithm.
 float TrainingNeuralNetwork::findMinAV(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes) {
 
 	float minCost = 1000;
@@ -266,46 +268,14 @@ float TrainingNeuralNetwork::findMinAV(Neuron* neuron, TrainingNeuralNetwork& lo
 
 	}
 
-	return minCostAV;
+	// "Undo" nonlinear function since we want to return raw value.
+	return TrainingNeuron::inverseNonlinear(minCostAV);
 
 }
 
 //--------------------------------------------------------------------------------
 
-// DOESNT TRAIN BIAS (output function always passes through origin).
-void nudgeWeights(TrainingNeuron* neuron, TrainingNeuralNetwork& loadState, std::ifstream& file) {
-
-	// How much each weight should change.
-	std::vector<float> weightChange;
-
-	for (int s = 0; s < sampleSize; s++) {
-
-		// Read the next loadstate from file.
-		readState(&loadState, &file);
-
-		float minAV = findMinAV(neuron, loadState, 20);
-
-		// Set the child neurons to be done first for optimization.
-		for (Neuron* n : neuron->getConnections()) childNeuron->setDone();
-
-		float AV = neuron->getValue();
-
-		// Iterate through each child neuron and find weight change.
-		for (Neuron* childNeuron : neuron->getConnections()) {
-
-			float influence = childNeuron->getValue();
-
-			weightChange.push_back(influence * (minAV - AV));
-
-		}
-
-		neuron->addConnections(weightChange, 0.1);
-
-	}
-
-}
-
-// samplePoints is formatted as a list containing a series of samples.
+// `samplePoints` is formatted as a list containing a series of samples.
 // Each sample is comprised of a bunch of inputs and the ideal AV (output).
 // For example {input, input, output, input, input, output, ...}
 bool TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes, std::ifstream& file) {
@@ -357,7 +327,9 @@ bool TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, TrainingNeuralNetwor
 
 }
 
-std::vector<float> calculateWeights(std::vector<float> samplePoints, int numDimensions) {
+std::vector<float> calculateWeights() {
+
+	numDimensions = centroid.size();
 
 	// If there's something wrong with samplePoints then abort.
 	if (samplePoints.size() / numDimensions != sampleSize) {
@@ -386,10 +358,12 @@ std::vector<float> calculateWeights(std::vector<float> samplePoints, int numDime
 			// Index within the entire list of sample points.
 			index = s * numDimensions + d;
 
-			// SUM(xdist * ydist) / SUM(xdist^2)
+			// Slope of best fit = SUM(xdist * ydist) / SUM(xdist^2)
+			// "xdist * ydist"
 			ndist.at(d) += (samplePoints.at(index) - centroid.at(d)) *		// X distance
 						  (samplePoints.at(outputIndex) - centroid.back()); // Y distance
 
+			// "xdist^2"
 			ddist.at(d) += (samplePoints.at(index) - centroid.at(d)) *
 						  (samplePoints.at(index) - centroid.at(d));
 
@@ -397,7 +371,7 @@ std::vector<float> calculateWeights(std::vector<float> samplePoints, int numDime
 
 	}
 
-	// Once the sums are calculated simply divide the 2 to get weights.
+	// Once the sums are calculated simply divide the two to get weights.
 	for (int d = 0; d < numDimensions - 1; d++) {
 
 		weights.at(d) = ndist.at(d) / ddist.at(d);
@@ -451,90 +425,20 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
 		std::cout << "\tSample points read.\n";
 		std::cout << "\tCalculating md plane of best fit.\n\n";
 
-		//---Then calculate plane of best fit and merge with previous plane of best fit.---
-
 		// Stores the average plane weights.
-		std::vector<float> weights(neuron->getNumConnections());
-		unsigned int weightCount = 0;
-		float bias = 0;
-
-		// Used for accessing the samplePoints vector.
-		unsigned int globalIndex = 0;
-		// Adds up all the planes calculated by the sample points to create an average plane of best fit.
-		for (int s = 0; s < sampleSize; s++) {
-
-			//================================================================================
-			//---Calculate the plane of best fit. This is done by averaging all the---
-			//---planes created by connecting each point to the centroid.---
-
-			// Local weight and bias, is later added into the average.
-			std::vector<float> localW(neuron->getNumConnections());
-			float localB = 0;
-			float addedDist = 0;
-			float Sd = 0;
-			float b = 0;
-
-			std::cout << "\t\tCalculating sum.\n";
-
-			// Find sum of the distance from centroid in each axis
-			// (not including dependent axis)
-			for (int n = 0; n < centroid.size() - 1; n++) {
-
-				samplePoints.at(globalIndex) -= centroid.at(n);
-				addedDist += samplePoints.at(globalIndex);
-				Sd += samplePoints.at(globalIndex) * samplePoints.at(globalIndex);
-
-				globalIndex++;
-
-			}
-
-			// Find zdist.
-			samplePoints.at(globalIndex) -= centroid.back();
-			float zDist = samplePoints.at(globalIndex);
-
-			// Only find and merge plane if the selected
-			// point isn't directly above the centroid.
-			if (addedDist != 0) {
-
-				// Calculate S (in formula).
-				float S = addedDist * zDist / Sd;
-
-				// Reset globalIndex to be reused in the next for loop.
-				globalIndex -= centroid.size() + 1;
-
-				//================================================================================
-				//---Calculate optimal weights and merge them with average.---
-
-				std::cout << "\t\tFinding optimal weights.\n";
-
-				for (int n = 0; n < weights.size(); n++) {
-
-					float localWeight = S * samplePoints.at(globalIndex) / addedDist;
-					b -= samplePoints.at(globalIndex) / addedDist * centroid.at(n);
-
-					weights.at(n) = (weights.at(n) * weightCount + localWeight) / float(weightCount + 1);
-
-					globalIndex++;
-
-				}
-
-				// Calculate optimal bias and merge with average.
-				localB = S * b;
-				bias = (bias * weightCount + localB) / float(weightCount + 1);
-
-			}
-
-			weightCount++;
-			globalIndex++;
-
-		}
+		std::vector<float> weights = calculateWeights();
 
 		// Now finally merge the plane of best fit with current weights/bias.
 		float strength = 1;
 		neuron->setConnections(weights, strength);
 
-		float newBias = neuron->getBias() * (1 - strength) + bias * strength;
-		neuron->setBias(newBias);
+		// Quickly find bias (intercept) using new weights and centroid.
+		float bias = centroid.back();
+		for (int d = 0; d < centroid.size() - 1; d++) {
+			bias -= weights.at(d) * centroid.at(d);
+		}
+
+		neuron->setBias(bias, strength);
 
 	}
 
