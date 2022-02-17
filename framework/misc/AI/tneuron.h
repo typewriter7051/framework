@@ -34,7 +34,7 @@ public:
     unsigned int getNumConnections();
 
     float getBias();
-	void setBias(float b);
+	void setBias(float b, float strength);
 
 	void setConnections(std::vector<float> values, float strength);
 	void addConnections(std::vector<float> values, float strength);

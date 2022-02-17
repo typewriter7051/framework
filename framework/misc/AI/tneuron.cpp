@@ -113,7 +113,7 @@ void TrainingNeuron::clearValues() {
 
 }
 
-static float TrainingNeuron::inverseNonlinear(float v) {
+float TrainingNeuron::inverseNonlinear(float v) {
 
 	return atanh(v);
 

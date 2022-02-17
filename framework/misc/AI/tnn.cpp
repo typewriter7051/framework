@@ -327,15 +327,15 @@ bool TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, TrainingNeuralNetwor
 
 }
 
-std::vector<float> calculateWeights() {
+std::vector<float> TrainingNeuralNetwork::calculateWeights() {
 
-	numDimensions = centroid.size();
+	int numDimensions = centroid.size();
 
 	// If there's something wrong with samplePoints then abort.
 	if (samplePoints.size() / numDimensions != sampleSize) {
 
 		std::cout << "\nSAMPLEPOINTS VECTOR DOESNT MATCH SAMPLESIZE\n";
-		return;
+		return std::vector<float>();
 
 	}
 

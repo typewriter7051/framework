@@ -52,6 +52,8 @@ private:
 
 	float findMinAV(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes);
 
+	std::vector<float> calculateWeights();
+
 	bool getSamplePoints(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes, std::ifstream& file);
 
 	void readState(TrainingNeuralNetwork* nn, std::ifstream* trainFile);
