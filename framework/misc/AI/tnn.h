@@ -12,7 +12,7 @@ public:
 	float getCost(std::vector<float>* finputs, std::vector<float>* foutputs);
 
 	void trainNeuralNetwork(std::string fileName, TrainingNeuron* neuron, unsigned int sampleSize, int minRes);
-	
+
 	//Neuron* getNeuron(unsigned int index);
 
 	//--------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ private:
 	std::vector<float> exout;
 
 	// List of all the points containing the inputs (child nodes)
-	// and outputs (neuron AV) to form a plane of best fit.
+	// and outputs (neuron AV) to form a cloud of high dimensional points.
 	std::vector<float> samplePoints;
 
 };

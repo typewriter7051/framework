@@ -305,6 +305,9 @@ void nudgeWeights(TrainingNeuron* neuron, TrainingNeuralNetwork& loadState, std:
 
 }
 
+// samplePoints is formatted as a list containing a series of samples.
+// Each sample is comprised of a bunch of inputs and the ideal AV (output).
+// For example {input, input, output, input, input, output, ...}
 bool TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes, std::ifstream& file) {
 
 	unsigned int numSamples = 0;
@@ -351,6 +354,58 @@ bool TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, TrainingNeuralNetwor
 	}
 
 	return true;
+
+}
+
+std::vector<float> calculateWeights(std::vector<float> samplePoints, int numDimensions) {
+
+	// If there's something wrong with samplePoints then abort.
+	if (samplePoints.size() / numDimensions != sampleSize) {
+
+		std::cout << "\nSAMPLEPOINTS VECTOR DOESNT MATCH SAMPLESIZE\n";
+		return;
+
+	}
+
+	std::vector<float> weights(numDimensions - 1); // List of weights to be returned.
+	std::vector<float> ndist(numDimensions - 1);
+	std::vector<float> ddist(numDimensions - 1);
+	int index = 0; // For use within the for loops.
+
+	// For each sample.
+	for (int s = 0; s < sampleSize; s++) {
+
+		// Index of the ideal AV (output) of the current sample.
+		int outputIndex = s * (numDimensions + 1) - 1;
+
+		// For each dimension (input) within a sample.
+		// The -1 in the range is because we don't need to include
+		// the output dimension.
+		for (int d = 0; d < numDimensions - 1; d++) {
+
+			// Index within the entire list of sample points.
+			index = s * numDimensions + d;
+
+			// SUM(xdist * ydist) / SUM(xdist^2)
+			ndist.at(d) += (samplePoints.at(index) - centroid.at(d)) *		// X distance
+						  (samplePoints.at(outputIndex) - centroid.back()); // Y distance
+
+			ddist.at(d) += (samplePoints.at(index) - centroid.at(d)) *
+						  (samplePoints.at(index) - centroid.at(d));
+
+		}
+
+	}
+
+	// Once the sums are calculated simply divide the 2 to get weights.
+	for (int d = 0; d < numDimensions - 1; d++) {
+
+		weights.at(d) = ndist.at(d) / ddist.at(d);
+		weights.at(d) /= float(numDimensions - 1); // Normalization.
+
+	}
+
+	return weights;
 
 }
 
