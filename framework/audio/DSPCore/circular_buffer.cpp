@@ -62,7 +62,7 @@ void CircularBuffer::resize(int s) {
     for (int i = 0; i < size; i++) {
 
         int newArrayIndex = s - size + i;
-        if (newArrayIndex > 0)
+        if (newArrayIndex >= 0)
             newArray[newArrayIndex] = at(i);
 
         //if (newArray[newArrayIndex] < 0.1)
