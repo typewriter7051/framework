@@ -52,6 +52,7 @@ public:
 
 	void clearValues();
 
+	static float nonLinear(float v);
 	static float inverseNonlinear(float v);
 
 private:

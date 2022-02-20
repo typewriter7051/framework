@@ -106,7 +106,7 @@ void Neuron::addConnection(Neuron* n, float w) {
 
 void Neuron::applyNonlinear() {
 
-	av = tanh(av);
+	//av = tanh(av);
 
 }
 

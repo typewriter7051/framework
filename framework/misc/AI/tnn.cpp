@@ -32,6 +32,7 @@ float TrainingNeuralNetwork::getCost(std::vector<float>* finputs, std::vector<fl
 	for (int i = 0; i < actualOutput.size(); i++) {
 
 		sd += (actualOutput.at(i) - foutputs->at(i)) * (actualOutput.at(i) - foutputs->at(i));
+		std::cout << "Expected output vs actual output: " << foutputs->at(i) << ", " << actualOutput.at(i) << std::endl;
 
 	}
 
@@ -208,20 +209,25 @@ std::vector<float> TrainingNeuralNetwork::captureNeuralNetwork(std::vector<float
 
 //--------------------------------------------------------------------------------
 
-void TrainingNeuralNetwork::readState(TrainingNeuralNetwork* nn, std::ifstream* trainFile) {
+bool TrainingNeuralNetwork::readState(TrainingNeuralNetwork* nn, std::ifstream* trainFile) {
 
-	// stupid fucking piece of shit one liner.
-	//trainFile->read((char*) nn->neurons.data(), sizeof(float) * nn->neurons.size());
-
-	// BUG IS SOMEWHERE HERE!!!
 	for (int neuron = 0; neuron < nn->neurons.size(); neuron++) {
 
-		float av;
+		float av = 0;
 		trainFile->read((char*)&av, sizeof(float));
+
+		if (trainFile->eof()) {
+
+			trainFile->close();
+			return false;
+
+		}
 
 		nn->neurons.at(neuron).setValue(av);
 
 	}
+
+	return true;
 
 }
 
@@ -245,7 +251,7 @@ void TrainingNeuralNetwork::readState(TrainingNeuralNetwork* nn, TrainingNeuralN
 
 // NOTE: Returns raw value BEFORE nonlinear function is applied. This is to
 // help the backpropogation algorithm.
-float TrainingNeuralNetwork::findMinAV(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes) {
+float TrainingNeuralNetwork::findMinAV(Neuron* neuron, TrainingNeuralNetwork* loadState, int minRes) {
 
 	float minCost = 1000;
 	float minCostAV = 0;
@@ -253,7 +259,7 @@ float TrainingNeuralNetwork::findMinAV(Neuron* neuron, TrainingNeuralNetwork& lo
 	for (int i = 0; i < minRes + 1; i++) {
 
 		// Set loadstate from load state before running the nn again.
-		readState(this, &loadState);
+		readState(this, loadState);
 
 		float avSamplePoint = -1 + 2 * i / float(minRes);
 		neuron->setValue(avSamplePoint);
@@ -270,6 +276,7 @@ float TrainingNeuralNetwork::findMinAV(Neuron* neuron, TrainingNeuralNetwork& lo
 
 	// "Undo" nonlinear function since we want to return raw value.
 	return TrainingNeuron::inverseNonlinear(minCostAV);
+	//return minCostAV;
 
 }
 
@@ -278,25 +285,18 @@ float TrainingNeuralNetwork::findMinAV(Neuron* neuron, TrainingNeuralNetwork& lo
 // `samplePoints` is formatted as a list containing a series of samples.
 // Each sample is comprised of a bunch of inputs and the ideal AV (output).
 // For example {input, input, output, input, input, output, ...}
-bool TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes, std::ifstream& file) {
-
-	unsigned int numSamples = 0;
+bool TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, TrainingNeuralNetwork* loadState, int minRes, std::ifstream& file) {
 
 	// Iterate through sampleSize samples and calculate the centroid.
 	for (int s = 0; s < sampleSize; s++) {
 
 		// Read the next loadstate from file.
-		readState(&loadState, &file);
-
-		if (file.eof()) {
-
-			file.close();
-			return false;
-
-		}
+		if (!readState(loadState, &file)) return false;
 
 		// Read the expected output data.
 		file.read((char*)exout.data(), sizeof(float) * os);
+
+		// NOTE: does not check for EOF after reading expected output.
 
 		//---Find the optimal neuron av and calculate weight/bias of best fit.---
 
@@ -311,15 +311,14 @@ bool TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, TrainingNeuralNetwor
 		for (int n = 0; n < connections.size(); n++) {
 
 			connections.at(n)->setDone(); // Just for efficeincy. No need to re-calculate the child node values.
-			centroid.at(n) = (centroid.at(n) * numSamples + connections[n]->getValue()) / float(numSamples + 1);
-			samplePoints.push_back(connections.at(n)->getValue());
+			float childNeuronAV = connections.at(n)->getValue();
+			centroid.at(n) = (centroid.at(n) * s + childNeuronAV) / float(s + 1);
+			samplePoints.push_back(childNeuronAV);
 
 		}
 
-		centroid.back() = (centroid.back() * numSamples + minCostAV) / float(numSamples + 1);
+		centroid.back() = (centroid.back() * s + minCostAV) / float(s + 1);
 		samplePoints.push_back(minCostAV);
-
-		numSamples++;
 
 	}
 
@@ -348,7 +347,7 @@ std::vector<float> TrainingNeuralNetwork::calculateWeights() {
 	for (int s = 0; s < sampleSize; s++) {
 
 		// Index of the ideal AV (output) of the current sample.
-		int outputIndex = s * (numDimensions + 1) - 1;
+		int outputIndex = (s + 1) * numDimensions - 1;
 
 		// For each dimension (input) within a sample.
 		// The -1 in the range is because we don't need to include
@@ -371,11 +370,17 @@ std::vector<float> TrainingNeuralNetwork::calculateWeights() {
 
 	}
 
+	// Divide by 0 prevention.
+	for (int d = 0; d < numDimensions - 1; d++)
+		if (ddist.at(d) == 0) ddist.at(d) = 1;
+
 	// Once the sums are calculated simply divide the two to get weights.
 	for (int d = 0; d < numDimensions - 1; d++) {
 
 		weights.at(d) = ndist.at(d) / ddist.at(d);
 		weights.at(d) /= float(numDimensions - 1); // Normalization.
+
+		//std::cout << "Weight #" << d << ": " << weights.at(d) << std::endl;
 
 	}
 
@@ -384,7 +389,7 @@ std::vector<float> TrainingNeuralNetwork::calculateWeights() {
 }
 
 void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
-	TrainingNeuron* neuron, unsigned int samSize, int minRes) {
+	TrainingNeuron* neuron, unsigned int samSize, int minRes, float strength) {
 
 	sampleSize = samSize;
 	std::ifstream file;
@@ -409,27 +414,27 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
 
 	exout.resize(os);
 
-	std::cout << "\nFile loading success!\n";
-	std::cout << "Starting read nn states phase.\n\n";
+	//std::cout << "\nFile loading success!\n";
+	//std::cout << "Starting read nn states phase.\n\n";
 
 	while (!file.eof()) {
 
+		samplePoints.clear();
+		centroid.clear();
 		// The +1 is for including the neuron output (av) value.
 		centroid.resize(neuron->getNumConnections() + 1);
-		samplePoints.clear();
 
 		// Retrives all the neuron sample points and average centroid.
-		if (!getSamplePoints(neuron, loadState, minRes, file))
+		if (!getSamplePoints(neuron, &loadState, minRes, file))
 			break;
 
-		std::cout << "\tSample points read.\n";
-		std::cout << "\tCalculating md plane of best fit.\n\n";
+		//std::cout << "\tSample points read.\n";
+		//std::cout << "\tCalculating md plane of best fit.\n\n";
 
 		// Stores the average plane weights.
 		std::vector<float> weights = calculateWeights();
 
 		// Now finally merge the plane of best fit with current weights/bias.
-		float strength = 1;
 		neuron->setConnections(weights, strength);
 
 		// Quickly find bias (intercept) using new weights and centroid.

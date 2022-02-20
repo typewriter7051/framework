@@ -11,7 +11,7 @@ public:
 
 	float getCost(std::vector<float>* finputs, std::vector<float>* foutputs);
 
-	void trainNeuralNetwork(std::string fileName, TrainingNeuron* neuron, unsigned int sampleSize, int minRes);
+	void trainNeuralNetwork(std::string fileName, TrainingNeuron* neuron, unsigned int sampleSize, int minRes, float strength);
 
 	//Neuron* getNeuron(unsigned int index);
 
@@ -50,13 +50,13 @@ private:
 
 	float getCostP(std::vector<float>* foutputs);
 
-	float findMinAV(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes);
+	float findMinAV(Neuron* neuron, TrainingNeuralNetwork* loadState, int minRes);
 
 	std::vector<float> calculateWeights();
 
-	bool getSamplePoints(Neuron* neuron, TrainingNeuralNetwork& loadState, int minRes, std::ifstream& file);
+	bool getSamplePoints(Neuron* neuron, TrainingNeuralNetwork* loadState, int minRes, std::ifstream& file);
 
-	void readState(TrainingNeuralNetwork* nn, std::ifstream* trainFile);
+	bool readState(TrainingNeuralNetwork* nn, std::ifstream* trainFile);
 	void readState(TrainingNeuralNetwork* nn, TrainingNeuralNetwork* on);
 
 	// Used for recording the nn state for training.

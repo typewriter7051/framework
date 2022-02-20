@@ -43,7 +43,7 @@ std::vector<float> NeuralNetwork::runNeuralNetwork(std::vector<float>* finputs) 
 
 	if (finputs->size() != inputs.size()) {
 
-		std::cout << "input array doesn't match nn inputs!\n";
+		std::cout << "input array doesn't match nn inputs! (" << finputs->size() << " vs " << inputs.size() << ")\n";
 		return std::vector<float>(1);
 
 	}
