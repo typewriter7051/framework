@@ -115,15 +115,15 @@ void TrainingNeuron::clearValues() {
 
 float TrainingNeuron::nonLinear(float v) {
 
-	//return tanh(v);
-	return v;
+	return tanh(v);
+	//return v;
 
 }
 
 float TrainingNeuron::inverseNonlinear(float v) {
 
-	//float rv = atanh(v);
-	float rv = v;
+	float rv = atanh(v);
+	//float rv = v;
 
 	float threshold = 100;
 

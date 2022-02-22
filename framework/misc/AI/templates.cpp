@@ -47,3 +47,53 @@ TrainingNeuralNetwork createConvolutionalNetwork(int inputs, int outputs, int hi
 	return nn;
 
 }
+
+// List of layer sizes.
+TrainingNeuralNetwork createUnevenNetwork(std::vector<int> sizes) {
+
+	// Not enough layers to make a neural network.
+	if (sizes.size() < 2) return;
+
+	TrainingNeuralNetwork nn;
+
+	int in = sizes.at(0);
+	int on = sizes.back();
+	int hn = 0;
+
+	// Exactly 2 layers in the neural network (input and output).
+	if (sizes.size() == 2) {
+
+		nn.setNeurons(in, on, 0);
+		nn.fullyConnectNeurons(nn.getOutputs(), nn.getInputs());
+		return nn;
+
+	}
+
+	for (int n = 1; n < sizes.size() - 1; n++) {
+		hn += sizes.at(n);
+
+	nn.setNeurons(in, on, hn);
+
+
+
+	int index = in + on;
+	// Connect first hidden layer to input layer.
+	nn.fullyConnectNeurons(nn.getArray(index, index + sizes.at(1) - 1), 
+						   nn.getInputs());
+	// Connect output layer to last hidden layer.
+	nn.fullyConnectNeurons(nn.getOutputs(),
+						   nn.getArray(in + on + hn - 1 - sizes.at(sizes.size() - 2),
+									   in + on + hn - 1));
+
+	for (int n = 1; n < sizes.size() - 1; n++) {
+
+		std::vector<Neuron*> cur  = nn.getArray(index, index + sizes.at(n) - 1);
+		std::vector<Neuron*> next = nn.getArray(index + sizes.at(n), index + sizes.at(n) + sizes.at(n + 1) - 1);
+
+		nn.fullyConnectNeurons(next, cur);
+
+		index += sizes.at(n);
+
+	}
+
+}
