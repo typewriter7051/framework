@@ -46,8 +46,10 @@ protected:
 
 	// Activation Value.
 	float av;
-
 	float bias;
+
+	enum NonLinearMethod {identity, step, sigmoid, hyperTan, ELU, RELU, swish};
+	NonLinearMethod af;
 
 	std::vector<float> values;
 

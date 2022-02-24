@@ -51,10 +51,10 @@ TrainingNeuralNetwork createConvolutionalNetwork(int inputs, int outputs, int hi
 // List of layer sizes.
 TrainingNeuralNetwork createUnevenNetwork(std::vector<int> sizes) {
 
-	// Not enough layers to make a neural network.
-	if (sizes.size() < 2) return;
-
 	TrainingNeuralNetwork nn;
+
+	// Not enough layers to make a neural network.
+	if (sizes.size() < 2) return nn;
 
 	int in = sizes.at(0);
 	int on = sizes.back();
@@ -69,7 +69,7 @@ TrainingNeuralNetwork createUnevenNetwork(std::vector<int> sizes) {
 
 	}
 
-	for (int n = 1; n < sizes.size() - 1; n++) {
+	for (int n = 1; n < sizes.size() - 1; n++)
 		hn += sizes.at(n);
 
 	nn.setNeurons(in, on, hn);
@@ -95,5 +95,7 @@ TrainingNeuralNetwork createUnevenNetwork(std::vector<int> sizes) {
 		index += sizes.at(n);
 
 	}
+
+	return nn;
 
 }

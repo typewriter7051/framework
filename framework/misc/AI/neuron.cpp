@@ -17,6 +17,7 @@ Neuron::Neuron() {
 	av = 0;
 	finished = false;
 	bias = 0;
+	af = identity;
 
 }
 
@@ -106,7 +107,18 @@ void Neuron::addConnection(Neuron* n, float w) {
 
 void Neuron::applyNonlinear() {
 
-	av = tanh(av);
+	switch (af) {
+
+	case identity:;
+	case step: av = (av < 0) ? 0 : 1;
+	case sigmoid: av = 1 / (1 + exp(-av));
+	case hyperTan: av = tanh(av);
+	case ELU: av = (av < 0) ? exp(av) - 1 : av;
+	case RELU: av = (av > 0) ? av : 0;
+	case swish: av = av / (1 + exp(av));
+	default:;
+
+	}
 
 }
 

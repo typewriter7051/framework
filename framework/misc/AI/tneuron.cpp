@@ -7,6 +7,10 @@ TrainingNeuron::TrainingNeuron() {
 	// No need to do ID handling or anything since it's
 	// included in the parent class' constructor.
 
+	// Placeholder.
+	pos.x = 10;
+	pos.y = 10;
+
 }
 
 //================================================================================
@@ -115,8 +119,18 @@ void TrainingNeuron::clearValues() {
 
 float TrainingNeuron::nonLinear(float v) {
 
-	return tanh(v);
-	//return v;
+	switch (af) {
+
+	case identity:;
+	case step: v = (v < 0) ? 0 : 1;
+	case sigmoid: v = 1 / (1 + exp(-v));
+	case hyperTan: v = tanh(v);
+	case ELU: v = (v < 0) ? exp(v) - 1 : v;
+	case RELU: v = (v > 0) ? v : 0;
+	case swish: v = v / (1 + exp(v));
+	default:;
+
+	}
 
 }
 

@@ -7,6 +7,10 @@
 TrainingNeuralNetwork::TrainingNeuralNetwork() {
 
 	recordMode = false;
+	is = 0;
+	os = 0;
+	hn = 0;
+	sampleSize = 0;
 
 }
 
