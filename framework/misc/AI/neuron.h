@@ -4,6 +4,12 @@
 #include <iostream>
 #include <vector>
 
+namespace ActivationFunction {
+
+	enum NonLinearMethod { identity, step, sigmoid, hyperTan, ELU };
+
+}
+
 class Neuron {
 public:
 
@@ -22,6 +28,10 @@ public:
 	std::vector<Neuron*> getConnections();
 
 	void setValue(float f);
+
+	void setBias(float b);
+
+	void setActivationFunction(ActivationFunction::NonLinearMethod a);
 
 	void setDone();
 	void setUndone();
@@ -48,8 +58,7 @@ protected:
 	float av;
 	float bias;
 
-	enum NonLinearMethod {identity, step, sigmoid, hyperTan, ELU, RELU, swish};
-	NonLinearMethod af;
+	ActivationFunction::NonLinearMethod af;
 
 	std::vector<float> values;
 

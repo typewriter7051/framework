@@ -2,6 +2,8 @@
 #include <random>
 #include <cmath> // For inverseNonlinear()
 
+using namespace ActivationFunction;
+
 TrainingNeuron::TrainingNeuron() {
 
 	// No need to do ID handling or anything since it's
@@ -121,29 +123,32 @@ float TrainingNeuron::nonLinear(float v) {
 
 	switch (af) {
 
-	case identity:;
-	case step: v = (v < 0) ? 0 : 1;
-	case sigmoid: v = 1 / (1 + exp(-v));
-	case hyperTan: v = tanh(v);
-	case ELU: v = (v < 0) ? exp(v) - 1 : v;
-	case RELU: v = (v > 0) ? v : 0;
-	case swish: v = v / (1 + exp(v));
-	default:;
+	case identity:; break;
+	case step: v = (v < 0) ? 0 : 1; break;
+	case sigmoid: v = 1 / (1 + exp(-v)); break;
+	case hyperTan: v = tanh(v); break;
+	case ELU: v = (v < 0) ? exp(v) - 1 : v; break;
+	default:; break;
 
 	}
+
+	return v;
 
 }
 
 float TrainingNeuron::inverseNonlinear(float v) {
 
-	float rv = atanh(v);
-	//float rv = v;
+	switch (af) {
 
-	float threshold = 100;
+	case identity:; break;
+	case step: v = (v < 0) ? -1 : 1; break;
+	case sigmoid: v = -log(1 / v - 1); break;
+	case hyperTan: v = atanh(v); break;
+	case ELU: v = (v < 0) ? log(v + 1) : v; break;
+	default:; break;
 
-	if (rv < -threshold) rv = -threshold;
-	if (rv > threshold) rv = threshold;
+	}
 
-	return rv;
+	return v;
 
 }

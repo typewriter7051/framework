@@ -19,7 +19,7 @@ TrainingNeuralNetwork::TrainingNeuralNetwork() {
 
 float TrainingNeuralNetwork::getCost(std::vector<float>* finputs, std::vector<float>* foutputs) {
 
-	std::vector<float> actualOutput = NeuralNetwork::runNeuralNetwork(finputs);
+	std::vector<float> actualOutput = runNeuralNetwork(finputs);
 
 	if (foutputs->size() != actualOutput.size()) {
 
@@ -100,6 +100,37 @@ std::vector<float> TrainingNeuralNetwork::rerunNeuralNetwork() {
 
 }
 
+std::vector<TrainingNeuron*> TrainingNeuralNetwork::getInputs() {
+
+	return inputs;
+
+}
+
+std::vector<TrainingNeuron*> TrainingNeuralNetwork::getOutputs() {
+
+	return outputs;
+
+}
+
+int TrainingNeuralNetwork::getNumHiddenNeurons() {
+
+	return neurons.size() - inputs.size() - outputs.size();
+
+}
+
+int TrainingNeuralNetwork::getNumUnhiddenNeurons() {
+
+	return inputs.size() + outputs.size();
+
+}
+
+int TrainingNeuralNetwork::getNumNeurons() {
+
+	return neurons.size();
+
+}
+
+
 //================================================================================
 // Setters.
 
@@ -109,9 +140,9 @@ TrainingNeuron* TrainingNeuralNetwork::getNeuron(unsigned int index) {
 
 }
 
-std::vector<Neuron*> TrainingNeuralNetwork::getArray(unsigned int start, unsigned int end) {
+std::vector<TrainingNeuron*> TrainingNeuralNetwork::getArray(unsigned int start, unsigned int end) {
 
-	std::vector<Neuron*> temp(end - start + 1);
+	std::vector<TrainingNeuron*> temp(end - start + 1);
 
 	for (int i = 0; i <= end - start; i++) {
 
@@ -134,6 +165,9 @@ void TrainingNeuralNetwork::setNeurons(unsigned int numInputs, unsigned int numO
 
 	// Reset and re-initialize the input/output pointer lists.
 	neurons.resize(numInputs + numOutputs + h);
+	is = numInputs;
+	os = numOutputs;
+	hn = h;
 
 	for (int i = 0; i < numInputs; i++) { inputs.push_back(&neurons[i]); }
 	for (int o = 0; o < numOutputs; o++) { outputs.push_back(&neurons[numInputs + o]); }
@@ -150,7 +184,7 @@ void TrainingNeuralNetwork::setupWeights(float min, float max) {
 
 }
 
-void TrainingNeuralNetwork::fullyConnectNeurons(std::vector<Neuron*> layerB, std::vector<Neuron*> layerA) {
+void TrainingNeuralNetwork::fullyConnectNeurons(std::vector<TrainingNeuron*> layerB, std::vector<TrainingNeuron*> layerA) {
 
 	for (Neuron* b : layerB) {
 		for (Neuron* a : layerA) {
@@ -183,9 +217,41 @@ void TrainingNeuralNetwork::stopRecording() {
 
 //--------------------------------------------------------------------------------
 
+// Runs the neural network and returns the outputs in a list.
+std::vector<float> TrainingNeuralNetwork::runNeuralNetwork(std::vector<float>* finputs) {
+
+	if (finputs->size() != inputs.size()) {
+
+		std::cout << "input array doesn't match nn inputs! (" << finputs->size() << " vs " << inputs.size() << ")\n";
+		return std::vector<float>(1);
+
+	}
+
+	// Clear finished status for all neurons.
+	for (int n = 0; n < neurons.size(); n++)
+		neurons[n].setUndone();
+
+	// Set up the input neurons.
+	for (int n = 0; n < inputs.size(); n++)
+		inputs.at(n)->setValue(finputs->at(n));
+
+	// Vector to be returned.
+	std::vector<float> rv;
+
+	// Call getValue() for all output neurons and copy results to returnVector.
+	for (Neuron* n : outputs) {
+
+		rv.push_back(n->getValue());
+
+	}
+
+	return rv;
+
+}
+
 std::vector<float> TrainingNeuralNetwork::captureNeuralNetwork(std::vector<float>* finputs, std::vector<float>* foutputs) {
 
-	std::vector<float> rv = NeuralNetwork::runNeuralNetwork(finputs);
+	std::vector<float> rv = runNeuralNetwork(finputs);
 
 	unsigned int a = 0;
 
@@ -255,31 +321,45 @@ void TrainingNeuralNetwork::readState(TrainingNeuralNetwork* nn, TrainingNeuralN
 
 // NOTE: Returns raw value BEFORE nonlinear function is applied. This is to
 // help the backpropogation algorithm.
-float TrainingNeuralNetwork::findMinAV(Neuron* neuron, TrainingNeuralNetwork* loadState, int minRes) {
+float TrainingNeuralNetwork::findMinAV(TrainingNeuron* neuron, TrainingNeuralNetwork* loadState, float threshold) {
 
-	float minCost = 1000;
-	float minCostAV = 0;
+	// If the selected neuron is in the input/output layer.
+	if (neuron->getID() < getNumUnhiddenNeurons()) return 0;
 
-	for (int i = 0; i < minRes + 1; i++) {
+	float stepSize = 1, avSamplePoint = 0, costDiff = 100000;
+	while (costDiff > threshold) {
 
-		// Set loadstate from load state before running the nn again.
 		readState(this, loadState);
+		neuron->setValue(avSamplePoint - stepSize);
+		float leftCost = this->getCostP(&exout);
 
-		float avSamplePoint = -1 + 2 * i / float(minRes);
+		readState(this, loadState);
+		neuron->setValue(avSamplePoint + stepSize);
+		float rightCost = this->getCostP(&exout);
+
+		readState(this, loadState);
 		neuron->setValue(avSamplePoint);
 		float curCost = this->getCostP(&exout);
 
-		if (curCost < minCost) {
+		costDiff = abs(rightCost - leftCost);
 
-			minCost = curCost;
-			minCostAV = avSamplePoint;
+		//std::cout << "Current Cost Difference: " << costDiff << std::endl;
 
-		}
+		bool curLowest = (curCost < leftCost && curCost < rightCost);
+		if (!curLowest && leftCost < rightCost) avSamplePoint -= stepSize;
+		if (!curLowest && leftCost > rightCost) avSamplePoint += stepSize;
+		else stepSize /= float(3);
 
 	}
 
+	readState(this, loadState);
+	neuron->setValue(avSamplePoint);
+	float minCost = this->getCostP(&exout);
+
+	std::cout << "(" << neuron->inverseNonlinear(avSamplePoint) << ", " << minCost << ")\n";
+
 	// "Undo" nonlinear function since we want to return raw value.
-	return TrainingNeuron::inverseNonlinear(minCostAV);
+	return neuron->inverseNonlinear(avSamplePoint);
 	//return minCostAV;
 
 }
@@ -289,7 +369,7 @@ float TrainingNeuralNetwork::findMinAV(Neuron* neuron, TrainingNeuralNetwork* lo
 // `samplePoints` is formatted as a list containing a series of samples.
 // Each sample is comprised of a bunch of inputs and the ideal AV (output).
 // For example {input, input, output, input, input, output, ...}
-bool TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, TrainingNeuralNetwork* loadState, int minRes, std::ifstream& file) {
+bool TrainingNeuralNetwork::getSamplePoints(TrainingNeuron* neuron, TrainingNeuralNetwork* loadState, int minRes, std::ifstream& file) {
 
 	// Iterate through sampleSize samples and calculate the centroid.
 	for (int s = 0; s < sampleSize; s++) {
@@ -304,7 +384,12 @@ bool TrainingNeuralNetwork::getSamplePoints(Neuron* neuron, TrainingNeuralNetwor
 
 		//---Find the optimal neuron av and calculate weight/bias of best fit.---
 
-		float minCostAV = findMinAV(neuron, loadState, minRes);
+		float minCostAV = 0;
+		// If the selected neuron is in the input/output (but mostly output) layer.
+		if (neuron->getID() < getNumUnhiddenNeurons())
+			minCostAV = exout.at(neuron->getID() - inputs.size());
+		// Otherwise continue as normal.
+		else minCostAV = findMinAV(neuron, loadState, minRes);
 
 		//--------------------------------------------------------------------------------
 		// Update the centroid.
@@ -393,7 +478,7 @@ std::vector<float> TrainingNeuralNetwork::calculateWeights() {
 }
 
 void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
-	TrainingNeuron* neuron, unsigned int samSize, int minRes, float strength) {
+	TrainingNeuron* neuron, unsigned int samSize, float threshold, float strength) {
 
 	sampleSize = samSize;
 	std::ifstream file;
@@ -429,7 +514,7 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
 		centroid.resize(neuron->getNumConnections() + 1);
 
 		// Retrives all the neuron sample points and average centroid.
-		if (!getSamplePoints(neuron, &loadState, minRes, file))
+		if (!getSamplePoints(neuron, &loadState, threshold, file))
 			break;
 
 		//std::cout << "\tSample points read.\n";
@@ -458,9 +543,23 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::string fileName,
 //================================================================================
 // File handling.
 
+/*
+
+* The training neural network (tnn) file contains a few extra details including 
+* the extra data from training neuron as opposed to regular neurons.
+* 
+* 
+* 
+* 
+* 
+* 
+* 
+* 
+*/
+
 void TrainingNeuralNetwork::loadFromFile(std::string fileName) {
 
-	fileName += ".nn";
+	fileName += ".tnn";
 
 	std::ifstream file;
 	file.open(fileName, std::ios::binary);
@@ -506,7 +605,7 @@ void TrainingNeuralNetwork::loadFromFile(std::string fileName) {
 
 void TrainingNeuralNetwork::saveToFile(std::string fileName) {
 
-	fileName += ".nn";
+	fileName += ".tnn";
 
 	std::ofstream file;
 	file.open(fileName, std::ios::out | std::ios::binary);
@@ -519,10 +618,6 @@ void TrainingNeuralNetwork::saveToFile(std::string fileName) {
 	file.write((char*)&is, sizeof(int));
 	file.write((char*)&os, sizeof(int));
 	file.write((char*)&hn, sizeof(int));
-
-	//file << inputs.size()  << "\n";
-	//file << outputs.size() << "\n";
-	//file << neurons.size() - inputs.size() - outputs.size() << "\n";
 
 	for (TrainingNeuron n : neurons) {
 

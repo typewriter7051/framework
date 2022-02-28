@@ -21,7 +21,7 @@ TrainingNeuralNetwork createConvolutionalNetwork(int inputs, int outputs, int hi
 	// Connect the hidden neurons.
 	for (int l = 0; l < hiddenLayers - 1; l++) {
 
-		std::vector<Neuron*> parentLayer, childLayer;
+		std::vector<TrainingNeuron*> parentLayer, childLayer;
 
 		int childStart = hiddenStart + l * hidden;
 		int childEnd = childStart + hidden - 1;
@@ -87,8 +87,8 @@ TrainingNeuralNetwork createUnevenNetwork(std::vector<int> sizes) {
 
 	for (int n = 1; n < sizes.size() - 1; n++) {
 
-		std::vector<Neuron*> cur  = nn.getArray(index, index + sizes.at(n) - 1);
-		std::vector<Neuron*> next = nn.getArray(index + sizes.at(n), index + sizes.at(n) + sizes.at(n + 1) - 1);
+		std::vector<TrainingNeuron*> cur  = nn.getArray(index, index + sizes.at(n) - 1);
+		std::vector<TrainingNeuron*> next = nn.getArray(index + sizes.at(n), index + sizes.at(n) + sizes.at(n + 1) - 1);
 
 		nn.fullyConnectNeurons(next, cur);
 

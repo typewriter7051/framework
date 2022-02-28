@@ -3,6 +3,8 @@
 #include <memory>
 #include <cmath>
 
+using namespace ActivationFunction;
+
 // Static member definition.
 unsigned int Neuron::idCounter = 0;
 
@@ -80,6 +82,18 @@ void Neuron::setValue(float f) {
 
 }
 
+void Neuron::setBias(float b) {
+
+	bias = b;
+
+}
+
+void Neuron::setActivationFunction(ActivationFunction::NonLinearMethod a) {
+
+	af = a;
+
+}
+
 void Neuron::setDone() {
 
 	finished = true;
@@ -109,14 +123,12 @@ void Neuron::applyNonlinear() {
 
 	switch (af) {
 
-	case identity:;
-	case step: av = (av < 0) ? 0 : 1;
-	case sigmoid: av = 1 / (1 + exp(-av));
-	case hyperTan: av = tanh(av);
-	case ELU: av = (av < 0) ? exp(av) - 1 : av;
-	case RELU: av = (av > 0) ? av : 0;
-	case swish: av = av / (1 + exp(av));
-	default:;
+	case identity:; break;
+	case step: av = (av < 0) ? 0 : 1; break;
+	case sigmoid: av = 1 / (1 + exp(-av)); break;
+	case hyperTan: av = tanh(av); break;
+	case ELU: av = (av < 0) ? exp(av) - 1 : av; break;
+	default:; break;
 
 	}
 

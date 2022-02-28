@@ -7,19 +7,29 @@ public:
 
 	TrainingNeuralNetwork();
 
+	std::vector<float> runNeuralNetwork(std::vector<float>* finputs);
+
 	std::vector<float> captureNeuralNetwork(std::vector<float>* finputs, std::vector<float>* foutputs);
 
 	float getCost(std::vector<float>* finputs, std::vector<float>* foutputs);
 
-	void trainNeuralNetwork(std::string fileName, TrainingNeuron* neuron, unsigned int sampleSize, int minRes, float strength);
+	void trainNeuralNetwork(std::string fileName, TrainingNeuron* neuron, unsigned int sampleSize, float threshold, float strength);
 
 	//Neuron* getNeuron(unsigned int index);
+
+	// Returns the pointer to input and output neuron lists.
+	std::vector<TrainingNeuron*> getInputs();
+	std::vector<TrainingNeuron*> getOutputs();
+
+	int getNumHiddenNeurons();
+	int getNumUnhiddenNeurons();
+	int getNumNeurons();
 
 	//--------------------------------------------------------------------------------
 	// Neuron setup.
 
 	TrainingNeuron* getNeuron(unsigned int index);
-	std::vector<Neuron*> getArray(unsigned int start, unsigned int end) override;
+	std::vector<TrainingNeuron*> getArray(unsigned int start, unsigned int end);
 
 	void setNeurons(unsigned int i, unsigned int o, unsigned int h) override;
 
@@ -27,7 +37,7 @@ public:
 	void setupWeights(float min, float max);
 
 	// Fully connects the 2 lists of neurons (B is ending layer, A is starting layer).
-	void fullyConnectNeurons(std::vector<Neuron*> layerB, std::vector<Neuron*> layerA);
+	void fullyConnectNeurons(std::vector<TrainingNeuron*> layerB, std::vector<TrainingNeuron*> layerA);
 
 	//--------------------------------------------------------------------------------
 	// Recording.
@@ -50,11 +60,11 @@ private:
 
 	float getCostP(std::vector<float>* foutputs);
 
-	float findMinAV(Neuron* neuron, TrainingNeuralNetwork* loadState, int minRes);
+	float findMinAV(TrainingNeuron* neuron, TrainingNeuralNetwork* loadState, float threshold);
 
 	std::vector<float> calculateWeights();
 
-	bool getSamplePoints(Neuron* neuron, TrainingNeuralNetwork* loadState, int minRes, std::ifstream& file);
+	bool getSamplePoints(TrainingNeuron* neuron, TrainingNeuralNetwork* loadState, int minRes, std::ifstream& file);
 
 	bool readState(TrainingNeuralNetwork* nn, std::ifstream* trainFile);
 	void readState(TrainingNeuralNetwork* nn, TrainingNeuralNetwork* on);
@@ -62,6 +72,9 @@ private:
 	// Used for recording the nn state for training.
 	bool recordMode;
 	std::ofstream recordFile;
+
+	// Pointers to the input and output neurons within the previous list.
+	std::vector<TrainingNeuron*> inputs, outputs;
 
 	std::vector<TrainingNeuron> neurons;
 

@@ -93,6 +93,30 @@ void NeuralNetwork::setNeurons(unsigned int numInputs, unsigned int numOutputs, 
 //================================================================================
 // File handling.
 
+/*
+
+* The neural network file is quite simple in format. The file beings with the following:
+* 
+* --------------------------------------------------------------------------------
+* # of input neurons "in" (unsigned int)
+* # of output neurons "on" (unsigned int)
+* # of hidden neurons "hn" (unsigned int)
+*
+* Then continues on for "in + on + hn" (just the total) number of neurons with each one containing:
+*
+*	- Type of activation function (enum).
+*	- Bias (float).
+*	- # of connections to PREVIOUS neurons "numConnections" (unsigned int). Also acts as the # of weights.
+*	Then "numConnections" amount of:
+* 
+*		- ID of previous neuron.
+*		- Weight.
+* 
+* - EOF
+* --------------------------------------------------------------------------------
+
+*/
+
 void NeuralNetwork::loadFromFile(std::string fileName) {
 
 	fileName += ".nn";
@@ -100,30 +124,36 @@ void NeuralNetwork::loadFromFile(std::string fileName) {
 	std::ifstream file;
 	file.open(fileName, std::ios::binary);
 
+	// Read network info.
 	unsigned int is, os, hn;
-	//file >> is >> os >> hn;
-
 	file.read((char*) &is, sizeof(unsigned int));
 	file.read((char*) &os, sizeof(unsigned int));
 	file.read((char*) &hn, sizeof(unsigned int));
-
 	setNeurons(is, os, hn);
 
 	for (int n = 0; n < neurons.size(); n++) {
 
+		// Read activation function.
+		ActivationFunction::NonLinearMethod af;
+		file.read((char*)&af, sizeof(uint8_t));
+		neurons.at(n).setActivationFunction(af);
+
+		// Read bias.
+		float bias;
+		file.read((char*)&bias, sizeof(float));
+		neurons.at(n).setBias(bias);
+
+		// Read number of connections(weights).
 		unsigned int numConnections;
+		file.read((char*) &numConnections, sizeof(unsigned int));
 
-		//file >> numConnections;
-		file.read((char*) &numConnections, sizeof(int));
-
+		// Read connections.
 		for (int c = 0; c < numConnections; c++) {
 
 			unsigned int nID;
-			//file >> nID;
 			file.read((char*) &nID, sizeof(unsigned int));
 
 			float nWeight;
-			//file >> nWeight;
 			file.read((char*) &nWeight, sizeof(float));
 
 			neurons[n].addConnection(&neurons[nID], nWeight);
