@@ -33,11 +33,12 @@ public:
 
     unsigned int getNumConnections();
 
-    float getBias();
-	void setBias(float b, float strength);
+	Neuron* getChild(int i);
 
-	void setConnections(std::vector<float> values, float strength);
-	void addConnections(std::vector<float> values, float strength);
+    float getBias();
+
+	void moveWeight(int index, float value);
+	void moveMembers(std::vector<float>* values, float strength);
 
     // Randomizes weights.
 	void setupAverageConnections(float min, float max);
@@ -51,9 +52,6 @@ public:
 	// Misc.
 
 	void clearValues();
-
-	float nonLinear(float v);
-	float inverseNonlinear(float v);
 
 private:
 

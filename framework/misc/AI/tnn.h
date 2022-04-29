@@ -9,11 +9,9 @@ public:
 
 	std::vector<float> runNeuralNetwork(std::vector<float>* finputs);
 
-	std::vector<float> captureNeuralNetwork(std::vector<float>* finputs, std::vector<float>* foutputs);
-
 	float getCost(std::vector<float>* finputs, std::vector<float>* foutputs);
 
-	void trainNeuralNetwork(std::string fileName, TrainingNeuron* neuron, unsigned int sampleSize, float threshold, float strength);
+	void trainNeuralNetwork(std::vector<float> samples, float stepSize, float strength);
 
 	//Neuron* getNeuron(unsigned int index);
 
@@ -40,12 +38,6 @@ public:
 	void fullyConnectNeurons(std::vector<TrainingNeuron*> layerB, std::vector<TrainingNeuron*> layerA);
 
 	//--------------------------------------------------------------------------------
-	// Recording.
-
-	void startRecording(std::string fileName);
-	void stopRecording();
-
-	//--------------------------------------------------------------------------------
 	// File handling.
 
 	void saveToFile(std::string fileName);
@@ -60,11 +52,9 @@ private:
 
 	float getCostP(std::vector<float>* foutputs);
 
-	float findMinAV(TrainingNeuron* neuron, TrainingNeuralNetwork* loadState, float threshold);
+	void setInputs(std::vector<float>* i);
 
-	std::vector<float> calculateWeights();
-
-	bool getSamplePoints(TrainingNeuron* neuron, TrainingNeuralNetwork* loadState, int minRes, std::ifstream& file);
+	void moveMembers(std::vector<std::vector<float>>* values, float strength);
 
 	bool readState(TrainingNeuralNetwork* nn, std::ifstream* trainFile);
 	void readState(TrainingNeuralNetwork* nn, TrainingNeuralNetwork* on);
@@ -81,16 +71,6 @@ private:
 	//--------------------------------------------------------------------------------
 	// Training.
 
-	unsigned int sampleSize;
-	std::vector<float> centroid;
-
 	unsigned int is, os, hn;
-
-	// List to hold expected outputs of each state.
-	std::vector<float> exout;
-
-	// List of all the points containing the inputs (child nodes)
-	// and outputs (neuron AV) to form a cloud of high dimensional points.
-	std::vector<float> samplePoints;
 
 };

@@ -28,8 +28,10 @@ public:
 	std::vector<Neuron*> getConnections();
 
 	void setValue(float f);
+	void moveValue(float f, float strength);
 
 	void setBias(float b);
+	void moveBias(float b);
 
 	void setActivationFunction(ActivationFunction::NonLinearMethod a);
 

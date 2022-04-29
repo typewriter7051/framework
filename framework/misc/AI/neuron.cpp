@@ -77,6 +77,14 @@ void Neuron::setValue(float f) {
 
 	av = f;
 
+	finished = false;
+
+}
+
+void Neuron::moveValue(float v, float strength) {
+
+	av += v * strength;
+
 	// Ensures that the neuron directly returns activation value without calling connected neurons.
 	finished = true;
 
@@ -85,6 +93,14 @@ void Neuron::setValue(float f) {
 void Neuron::setBias(float b) {
 
 	bias = b;
+
+}
+
+void Neuron::moveBias(float b) {
+
+	bias += b;
+
+	finished = false;
 
 }
 

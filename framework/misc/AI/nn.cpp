@@ -139,7 +139,7 @@ void NeuralNetwork::loadFromFile(std::string fileName) {
 		neurons.at(n).setActivationFunction(af);
 
 		// Read bias.
-		float bias;
+		float bias = 0;
 		file.read((char*)&bias, sizeof(float));
 		neurons.at(n).setBias(bias);
 
