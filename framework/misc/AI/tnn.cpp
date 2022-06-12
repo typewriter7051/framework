@@ -1,5 +1,6 @@
-#include <cmath>
 #include "tnn.h"
+#include <iostream>
+#include <cmath>
 
 //================================================================================
 // Constructors.
@@ -77,15 +78,15 @@ float TrainingNeuralNetwork::getCostP(std::vector<float>* foutputs) {
 std::vector<float> TrainingNeuralNetwork::rerunNeuralNetwork() {
 
 	// Set inputs to be done.
-	for (Neuron* n : inputs) n->setDone();
+	for (TrainingNeuron* n : inputs) n->setDone();
 
 	// Vector to be returned.
 	std::vector<float> rv;
 
 	// Call getValue() for all output neurons and copy results to returnVector.
-	for (Neuron* n : outputs) {
+	for (TrainingNeuron* n : outputs) {
 
-		rv.push_back(n->getValue());
+		rv.push_back(n->getValue(true));
 
 	}
 
@@ -108,6 +109,17 @@ std::vector<TrainingNeuron*> TrainingNeuralNetwork::getInputs() {
 std::vector<TrainingNeuron*> TrainingNeuralNetwork::getOutputs() {
 
 	return outputs;
+
+}
+
+std::vector<TrainingNeuron*> TrainingNeuralNetwork::getNeurons() {
+
+	std::vector<TrainingNeuron*> n;
+
+	for (TrainingNeuron tn : neurons)
+		n.push_back(&tn);
+
+	return n;
 
 }
 
@@ -160,7 +172,7 @@ void TrainingNeuralNetwork::setNeurons(unsigned int numInputs, unsigned int numO
 	neurons.clear();
 	inputs.clear();
 	outputs.clear();
-	Neuron::resetIDCounter();
+	TrainingNeuron::resetIDCounter();
 
 	// Reset and re-initialize the input/output pointer lists.
 	neurons.resize(numInputs + numOutputs + h);
@@ -185,13 +197,20 @@ void TrainingNeuralNetwork::setupWeights(float min, float max) {
 
 void TrainingNeuralNetwork::fullyConnectNeurons(std::vector<TrainingNeuron*> layerB, std::vector<TrainingNeuron*> layerA) {
 
-	for (Neuron* b : layerB) {
-		for (Neuron* a : layerA) {
+	for (TrainingNeuron* b : layerB) {
+		for (TrainingNeuron* a : layerA) {
 
 			b->addConnection(a);
 
 		}
 	}
+
+}
+
+void TrainingNeuralNetwork::setActivationFunction(std::vector<TrainingNeuron*> neurons, ActivationFunction::NonLinearMethod method) {
+
+	for (TrainingNeuron* n : neurons)
+		n->setActivationFunction(method);
 
 }
 
@@ -207,9 +226,13 @@ std::vector<float> TrainingNeuralNetwork::runNeuralNetwork(std::vector<float>* f
 
 	}
 
-	// Clear finished status for all neurons.
-	for (int n = 0; n < neurons.size(); n++)
+	// Clear any metadata for all neurons.
+	for (int n = 0; n < neurons.size(); n++) {
+
 		neurons[n].setUndone();
+		neurons[n].resetNumParents();
+
+	}
 
 	// Set up the input neurons.
 	setInputs(finputs);
@@ -218,9 +241,9 @@ std::vector<float> TrainingNeuralNetwork::runNeuralNetwork(std::vector<float>* f
 	std::vector<float> rv;
 
 	// Call getValue() for all output neurons and copy results to returnVector.
-	for (Neuron* n : outputs) {
+	for (TrainingNeuron* n : outputs) {
 
-		rv.push_back(n->getValue());
+		rv.push_back(n->getValue(true));
 
 	}
 
@@ -265,7 +288,7 @@ void TrainingNeuralNetwork::readState(TrainingNeuralNetwork* nn, TrainingNeuralN
 
 	for (int neuron = nn->getNumUnhiddenNeurons(); neuron < nn->neurons.size(); neuron++) {
 
-		float av = on->neurons.at(neuron).getValue();
+		float av = on->neurons.at(neuron).getValue(false);
 		nn->neurons.at(neuron).setValue(av);
 
 	}
@@ -282,6 +305,55 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::vector<float> samples, float
 		return;
 
 	}
+
+	std::vector<float> avgDerivRecord;
+
+	calculate countRecord;
+
+	for (t : threads) {
+
+		std::vector<unsigned int> countRecord;
+		std::vector<float> derivRecord;
+
+		// Calculates derivRecord which represents the cost derivative of all neurons (NOT their connection weights).
+		for (TrainingNeuron o : outputs) {
+
+			// dc / dx = x / nc;
+			// x is difference between actual and expected result.
+			float dCost = x / outputs.size() * cost;
+
+			o.getDerivative(&countRecord, &derivRecord, dCost);
+
+		}
+
+		// Once derivRecord is complete, add it to the average.
+
+
+
+	}
+
+	// Once average derivRecord is done, get the cost derivative of all the neuron connections.
+	for (all except input neurons) {
+
+		connections = n.getConnections();
+
+		for (nc : connections) {
+
+			connectionDeriv = avgDerivRecord[n.getID()] * nc.weight;
+
+			trim if needed;
+
+			move weights accordingly;
+
+		}
+
+		repeat for bias;
+
+	}
+
+	trim neurons if needed;
+
+	/*
 
 	//--------------------------------------------------------------------------------
 	// Member definitions.
@@ -310,7 +382,6 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::vector<float> samples, float
 	}
 
 	//--------------------------------------------------------------------------------
-	// 
 
 	for (int i = 0; i < batchSize; i++) {
 
@@ -338,7 +409,7 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::vector<float> samples, float
 			TrainingNeuron* neuron = &neurons.at(n);
 
 			// Get the list of pointers to its child neurons (inputs).
-			std::vector<Neuron*> connections = neuron->getConnections();
+			std::vector<TrainingNeuron*> connections = neuron->getConnections();
 
 			readState(this, &loadState);
 			float cost = this->getCostP(&newOutputs);
@@ -375,6 +446,8 @@ void TrainingNeuralNetwork::trainNeuralNetwork(std::vector<float> samples, float
 	// Move the members after calculating gradient.
 
 	moveMembers(&derivatives, strength);
+
+	*/
 
 }
 

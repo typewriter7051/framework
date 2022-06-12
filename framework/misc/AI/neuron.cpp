@@ -29,25 +29,25 @@ unsigned int Neuron::getID() {
 
 }
 
-float Neuron::getValue() {
+// If recurse is set to false, the neuron will simply return it's previous/un-updated activation value.
+// This is used so that some neurons can have a recursive (memory) connection.
 
-	float temp = 0;
+// Recursive feedback connections can still function expectedly if the child neuron already has "finished" status when such recursive neuron is reached.
+float Neuron::getValue(bool recurse) {
 
 	if (finished)
 		return av;
 
-	else {
+	float temp = 0, avReturn = av;
 
-		// Mark the node as "done" in case future nodes wish to retrieve its value.
-		// It's important to keep this before the for loop to avoid infinite recursion.
-		finished = true;
+	// Mark the node as "done" in case future nodes wish to retrieve its value.
+	// It's important to keep this before the for loop to avoid infinite recursion.
+	finished = true;
 
-		for (int nc = 0; nc < ncs.size(); nc++) {
+	for (int nc = 0; nc < ncs.size(); nc++) {
 
-			// Weight multiplication is already done in retrieveValue().
-			temp += ncs[nc].retrieveValue();
-
-		}
+		// Weight multiplication is already done in retrieveValue().
+		temp += ncs[nc].retrieveValue();
 
 	}
 
@@ -55,7 +55,9 @@ float Neuron::getValue() {
 	av = temp + bias;
 	applyNonlinear();
 
-	return av;
+	// The neuron's activation value is updated regardless, but
+	// the old value is returned if `recurse` is set to false.
+	return (recurse) ? av : avReturn;
 
 }
 
@@ -65,7 +67,7 @@ std::vector<Neuron*> Neuron::getConnections() {
 
 	for (NeuralConnection nc : ncs) {
 
-		returnList.push_back(nc.prevNeuron);
+		returnList.push_back(nc.getPrevNeuron());
 
 	}
 
@@ -139,11 +141,16 @@ void Neuron::applyNonlinear() {
 
 	switch (af) {
 
+	case arcHyperTan: av = atanh(av); break;
+	case ELU: av = (av < 0) ? exp(av) - 1 : av; break;
+	case hyperTan: av = tanh(av); break;
 	case identity:; break;
+	case mish: av = av * tanh( log(1 + exp(av)) );
+	case ReLU: av = (av < 0) ? 0 : av; break;
 	case step: av = (av < 0) ? 0 : 1; break;
 	case sigmoid: av = 1 / (1 + exp(-av)); break;
-	case hyperTan: av = tanh(av); break;
-	case ELU: av = (av < 0) ? exp(av) - 1 : av; break;
+	case softplus: av = log(1 + exp(av)); break;
+	case swish: av = av / (1 + exp(-av)); break;
 	default:; break;
 
 	}

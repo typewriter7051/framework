@@ -6,7 +6,18 @@
 
 namespace ActivationFunction {
 
-	enum NonLinearMethod { identity, step, sigmoid, hyperTan, ELU };
+	enum NonLinearMethod {
+		arcHyperTan,
+		ELU,
+		hyperTan,
+		identity,
+		mish,
+		ReLU,
+		step,
+		sigmoid,
+		softplus,
+		swish
+		};
 
 }
 
@@ -21,7 +32,7 @@ public:
 	//--------------------------------------------------------------------------------
 	// Getters & setters.
 
-	float getValue();
+	float getValue(bool recurse);
 
 	unsigned int getID();
 
@@ -43,7 +54,7 @@ public:
 
 	static void resetIDCounter();
 
-protected:
+private:
 
 	void applyNonlinear();
 
@@ -70,23 +81,27 @@ protected:
 	struct NeuralConnection {
 	public:
 
-		Neuron* prevNeuron;
 		float weight;
+		bool isRecursive;
 
-		NeuralConnection() : weight(0), prevNeuron(NULL) {}
-		NeuralConnection(Neuron* n) : weight(0) { prevNeuron = n; }
-		NeuralConnection(Neuron* n, float w) : weight(w) { prevNeuron = n; }
+		NeuralConnection() : weight(0), isRecursive(false), prevNeuron(NULL) {}
+		NeuralConnection(Neuron* n) : weight(0), isRecursive(false) { prevNeuron = n; }
+		NeuralConnection(Neuron* n, float w) : weight(w), isRecursive(false) { prevNeuron = n; }
 		//~NeuralConnection() { delete prevNeuron; prevNeuron = NULL; }
 
 		float retrieveValue() {
 
-			return prevNeuron->getValue() * weight;
+			return prevNeuron->getValue(!isRecursive) * weight;
 
 		}
 
-	};
+		Neuron* getPrevNeuron() { return prevNeuron; }
 
-	//--------------------------------------------------------------------------------
+	private:
+
+		Neuron* prevNeuron;
+
+	};
 
 	std::vector<NeuralConnection> ncs;
 

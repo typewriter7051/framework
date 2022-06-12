@@ -26,12 +26,12 @@ public:
 	//--------------------------------------------------------------------------------
 	// File handling.
 
-	virtual void loadFromFile(std::string fileName);
+	void loadFromFile(std::string fileName);
 
 protected:
 
 	// Establishes the list of neurons given a set number of input, output, and hidden neurons.
-	virtual void setNeurons(unsigned int i, unsigned int o, unsigned int h);
+	void setNeurons(unsigned int i, unsigned int o, unsigned int h);
 
 private:
 
