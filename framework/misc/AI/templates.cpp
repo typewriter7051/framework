@@ -2,9 +2,9 @@
 #include "templates.h"
 
 // Creates a typical CNN with a series a hidden layers consistent in size.
-TrainingNeuralNetwork createConvolutionalNetwork(int inputs, int outputs, int hidden, int hiddenLayers) {
+DynamicNeuralNetwork createConvolutionalNetwork(int inputs, int outputs, int hidden, int hiddenLayers) {
 
-	TrainingNeuralNetwork nn;
+	DynamicNeuralNetwork nn;
 
 	unsigned int hiddenNeurons = hidden * hiddenLayers;
 	int hiddenStart = inputs + outputs;
@@ -21,7 +21,7 @@ TrainingNeuralNetwork createConvolutionalNetwork(int inputs, int outputs, int hi
 	// Connect the hidden neurons.
 	for (int l = 0; l < hiddenLayers - 1; l++) {
 
-		std::vector<TrainingNeuron*> parentLayer, childLayer;
+		std::vector<DynamicNeuron*> parentLayer, childLayer;
 
 		int childStart = hiddenStart + l * hidden;
 		int childEnd = childStart + hidden - 1;
@@ -49,9 +49,9 @@ TrainingNeuralNetwork createConvolutionalNetwork(int inputs, int outputs, int hi
 }
 
 // List of layer sizes.
-TrainingNeuralNetwork createUnevenNetwork(std::vector<int> sizes) {
+DynamicNeuralNetwork createUnevenNetwork(std::vector<int> sizes) {
 
-	TrainingNeuralNetwork nn;
+	DynamicNeuralNetwork nn;
 
 	// Not enough layers to make a neural network.
 	if (sizes.size() < 2) return nn;
@@ -87,8 +87,8 @@ TrainingNeuralNetwork createUnevenNetwork(std::vector<int> sizes) {
 
 	for (int n = 1; n < sizes.size() - 1; n++) {
 
-		std::vector<TrainingNeuron*> cur  = nn.getArray(index, index + sizes.at(n) - 1);
-		std::vector<TrainingNeuron*> next = nn.getArray(index + sizes.at(n), index + sizes.at(n) + sizes.at(n + 1) - 1);
+		std::vector<DynamicNeuron*> cur  = nn.getArray(index, index + sizes.at(n) - 1);
+		std::vector<DynamicNeuron*> next = nn.getArray(index + sizes.at(n), index + sizes.at(n) + sizes.at(n + 1) - 1);
 
 		nn.fullyConnectNeurons(next, cur);
 

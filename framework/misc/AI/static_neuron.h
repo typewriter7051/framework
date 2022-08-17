@@ -21,22 +21,22 @@ namespace ActivationFunction {
 
 }
 
-class Neuron {
+class StaticNeuron {
 public:
 
 	//--------------------------------------------------------------------------------
 	// Constructors.
 
-	Neuron();
+	StaticNeuron();
 
 	//--------------------------------------------------------------------------------
 	// Getters & setters.
 
-	float getValue(bool recurse);
+	float getValue();
 
 	unsigned int getID();
 
-	std::vector<Neuron*> getConnections();
+	std::vector<StaticNeuron*> getConnections();
 
 	void setValue(float f);
 	void moveValue(float f, float strength);
@@ -49,8 +49,8 @@ public:
 	void setDone();
 	void setUndone();
 
-	void addConnection(Neuron* n);
-	void addConnection(Neuron* n, float w);
+	void addConnection(StaticNeuron* n);
+	void addConnection(StaticNeuron* n, float w);
 
 	static void resetIDCounter();
 
@@ -85,21 +85,21 @@ private:
 		bool isRecursive;
 
 		NeuralConnection() : weight(0), isRecursive(false), prevNeuron(NULL) {}
-		NeuralConnection(Neuron* n) : weight(0), isRecursive(false) { prevNeuron = n; }
-		NeuralConnection(Neuron* n, float w) : weight(w), isRecursive(false) { prevNeuron = n; }
+		NeuralConnection(StaticNeuron* n) : weight(0), isRecursive(false) { prevNeuron = n; }
+		NeuralConnection(StaticNeuron* n, float w) : weight(w), isRecursive(false) { prevNeuron = n; }
 		//~NeuralConnection() { delete prevNeuron; prevNeuron = NULL; }
 
 		float retrieveValue() {
 
-			return prevNeuron->getValue(!isRecursive) * weight;
+			return prevNeuron->getValue() * weight;
 
 		}
 
-		Neuron* getPrevNeuron() { return prevNeuron; }
+		StaticNeuron* getPrevNeuron() { return prevNeuron; }
 
 	private:
 
-		Neuron* prevNeuron;
+		StaticNeuron* prevNeuron;
 
 	};
 

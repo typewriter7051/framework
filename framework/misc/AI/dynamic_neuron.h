@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <fstream>
+#include <vector>
 
 namespace AI {
 
@@ -37,40 +38,36 @@ namespace ActivationFunction {
 
 }
 
-class TrainingNeuron {
+class DynamicNeuron {
 public:
 
-    TrainingNeuron();
+    DynamicNeuron();
 
     //--------------------------------------------------------------------------------
 	// Getters and setters.
-
-	// The TrainingNeuron version of getValue(). This includes additional features such as
-	// incrementing the numParents value depending on the connection type.
-	float getValue(bool recurse);
 
 	AI::NeuronPos getPos() { return pos; }
 	void setPos(AI::NeuronPos p) { pos = p; }
 
     unsigned int getNumConnections();
 
-	void addConnection(TrainingNeuron* n);
-	void addConnection(TrainingNeuron* n, float w);
+	void addConnection(DynamicNeuron* n);
+	void addConnection(DynamicNeuron* n, float w);
 
 	unsigned int getID();
 
-	TrainingNeuron* getChild(int i);
+	DynamicNeuron* getChild(int i);
 
     float getBias();
 	void setBias(float b);
 
-	float getValue(bool recurse);
+	float getValue();
 	void setValue(float f);
 
 	void setUndone();
 	void setDone();
 
-	void getDerivative(std::vector<int>* countRecord, std::vector<float>* derivRecord, float dcost);
+	void getDerivative(std::vector<int>* countRecord, std::vector<std::vector<float>>* derivRecord, float dcost);
 
 	void moveWeight(int index, float value);
 	void moveMembers(std::vector<float>* values, float strength);
@@ -83,21 +80,22 @@ public:
 	//--------------------------------------------------------------------------------
 	// Neural connection struct.
 
-	struct TrainingNeuralConnection {
+	struct DynamicNeuralConnection {
 	public:
 
-		TrainingNeuron* prevNeuron;
+		DynamicNeuron* prevNeuron;
 		float weight;
 		bool isRecursive;
 
-		TrainingNeuralConnection() {}
-		TrainingNeuralConnection(TrainingNeuron* n) { prevNeuron = n; }
-		TrainingNeuralConnection(TrainingNeuron* n, float w) { prevNeuron = n; weight = w; }
+		DynamicNeuralConnection() {}
+		DynamicNeuralConnection(DynamicNeuron* n) { prevNeuron = n; }
+		DynamicNeuralConnection(DynamicNeuron* n, float w) { prevNeuron = n; weight = w; }
 		//~NeuralConnection() { delete prevNeuron; prevNeuron = NULL; }
 
-		float retrieveValue() {
+		float retrieveValue(bool incrementParent) {
 
-			return prevNeuron->getValue(!isRecursive) * weight;
+			if (!isRecursive && incrementParent) prevNeuron->numParents++;
+			return prevNeuron->getValue() * weight;
 
 		}
 
@@ -105,6 +103,8 @@ public:
 
 	//--------------------------------------------------------------------------------
 	// numParents
+
+	unsigned int numParents; // Number of parent neuron connections in the network.
 
 	void incrementParent();
 
@@ -139,10 +139,6 @@ private:
 	std::vector<float> values;
 	AI::NeuronPos pos;
 
-	unsigned int numParents; // Number of parent neuron connections in the network.
-
-	float dCost; // Derivative of the cost with respect to this neuron's activation value.
-
-	std::vector<TrainingNeuralConnection> ncs;
+	std::vector<DynamicNeuralConnection> ncs;
 
 };

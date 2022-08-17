@@ -1,4 +1,4 @@
-#include "neuron.h"
+#include "static_neuron.h"
 #include <time.h>
 #include <memory>
 #include <cmath>
@@ -6,12 +6,12 @@
 using namespace ActivationFunction;
 
 // Static member definition.
-unsigned int Neuron::idCounter = 0;
+unsigned int StaticNeuron::idCounter = 0;
 
 //================================================================================
 // Constructors.
 
-Neuron::Neuron() {
+StaticNeuron::StaticNeuron() {
 
 	ID = idCounter;
 	idCounter++;
@@ -23,7 +23,7 @@ Neuron::Neuron() {
 
 }
 
-unsigned int Neuron::getID() {
+unsigned int StaticNeuron::getID() {
 
 	return ID;
 
@@ -33,15 +33,16 @@ unsigned int Neuron::getID() {
 // This is used so that some neurons can have a recursive (memory) connection.
 
 // Recursive feedback connections can still function expectedly if the child neuron already has "finished" status when such recursive neuron is reached.
-float Neuron::getValue(bool recurse) {
+float StaticNeuron::getValue() {
 
 	if (finished)
 		return av;
 
-	float temp = 0, avReturn = av;
+	float temp = 0;
 
 	// Mark the node as "done" in case future nodes wish to retrieve its value.
-	// It's important to keep this before the for loop to avoid infinite recursion.
+	// It's important to keep this before the for loop to avoid infinite
+	// recursion when the connection forms a dependency circle.
 	finished = true;
 
 	for (int nc = 0; nc < ncs.size(); nc++) {
@@ -55,15 +56,13 @@ float Neuron::getValue(bool recurse) {
 	av = temp + bias;
 	applyNonlinear();
 
-	// The neuron's activation value is updated regardless, but
-	// the old value is returned if `recurse` is set to false.
-	return (recurse) ? av : avReturn;
+	return av;
 
 }
 
-std::vector<Neuron*> Neuron::getConnections() {
+std::vector<StaticNeuron*> StaticNeuron::getConnections() {
 
-	std::vector<Neuron*> returnList;
+	std::vector<StaticNeuron*> returnList;
 
 	for (NeuralConnection nc : ncs) {
 
@@ -75,7 +74,7 @@ std::vector<Neuron*> Neuron::getConnections() {
 
 }
 
-void Neuron::setValue(float f) {
+void StaticNeuron::setValue(float f) {
 
 	av = f;
 
@@ -83,7 +82,7 @@ void Neuron::setValue(float f) {
 
 }
 
-void Neuron::moveValue(float v, float strength) {
+void StaticNeuron::moveValue(float v, float strength) {
 
 	av += v * strength;
 
@@ -92,13 +91,13 @@ void Neuron::moveValue(float v, float strength) {
 
 }
 
-void Neuron::setBias(float b) {
+void StaticNeuron::setBias(float b) {
 
 	bias = b;
 
 }
 
-void Neuron::moveBias(float b) {
+void StaticNeuron::moveBias(float b) {
 
 	bias += b;
 
@@ -106,38 +105,38 @@ void Neuron::moveBias(float b) {
 
 }
 
-void Neuron::setActivationFunction(ActivationFunction::NonLinearMethod a) {
+void StaticNeuron::setActivationFunction(ActivationFunction::NonLinearMethod a) {
 
 	af = a;
 
 }
 
-void Neuron::setDone() {
+void StaticNeuron::setDone() {
 
 	finished = true;
 
 }
 
 // Clears finished status for next iteration.
-void Neuron::setUndone() {
+void StaticNeuron::setUndone() {
 
 	finished = false;
 
 }
 
-void Neuron::addConnection(Neuron* n) {
+void StaticNeuron::addConnection(StaticNeuron* n) {
 
 	ncs.push_back(NeuralConnection(n));
 
 }
 
-void Neuron::addConnection(Neuron* n, float w) {
+void StaticNeuron::addConnection(StaticNeuron* n, float w) {
 
 	ncs.push_back(NeuralConnection(n, w));
 
 }
 
-void Neuron::applyNonlinear() {
+void StaticNeuron::applyNonlinear() {
 
 	switch (af) {
 
@@ -157,7 +156,7 @@ void Neuron::applyNonlinear() {
 
 }
 
-void Neuron::resetIDCounter() {
+void StaticNeuron::resetIDCounter() {
 
 	idCounter = 0;
 

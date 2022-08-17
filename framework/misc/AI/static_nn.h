@@ -1,24 +1,25 @@
 #pragma once
+#include "static_neuron.h"
 #include <vector>
 #include <string>
-#include "neuron.h"
 
-class NeuralNetwork {
+class StaticNeuralNetwork {
 public:
 	//--------------------------------------------------------------------------------
 	//Constructors.
 
-	NeuralNetwork() {}
+	StaticNeuralNetwork() {}
 
 	//--------------------------------------------------------------------------------
 	// Getters.
 
 	// Returns the pointer to input and output neuron lists.
-	std::vector<Neuron*> getInputs();
-	std::vector<Neuron*> getOutputs();
+	std::vector<StaticNeuron*> getInputs();
+	std::vector<StaticNeuron*> getOutputs();
 
-	Neuron* getNeuron(unsigned int index);
-	std::vector<Neuron*> getArray(unsigned int start, unsigned int end);
+
+	StaticNeuron* getNeuron(unsigned int index);
+	std::vector<StaticNeuron*> getArray(unsigned int start, unsigned int end);
 
 	// Runs the neural network and returns the outputs in a list.
 	std::vector<float> runNeuralNetwork(std::vector<float>* finputs);
@@ -28,17 +29,15 @@ public:
 
 	void loadFromFile(std::string fileName);
 
-protected:
+private:
 
 	// Establishes the list of neurons given a set number of input, output, and hidden neurons.
 	void setNeurons(unsigned int i, unsigned int o, unsigned int h);
 
-private:
-
 	// Pointers to the input and output neurons within the previous list.
-	std::vector<Neuron*> inputs, outputs;
+	std::vector<StaticNeuron*> inputs, outputs;
 
 	// Holds all the neurons including inputs and outputs.
-	std::vector<Neuron> neurons;
+	std::vector<StaticNeuron> neurons;
 
 };

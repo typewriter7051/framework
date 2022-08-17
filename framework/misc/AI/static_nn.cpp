@@ -1,26 +1,26 @@
 #include <fstream>
 #include <iostream>
 #include <math.h>
-#include "nn.h"
+#include "static_nn.h"
 
 //================================================================================
 // Getters.
 
-std::vector<Neuron*> NeuralNetwork::getInputs() {
+std::vector<StaticNeuron*> StaticNeuralNetwork::getInputs() {
 
 	return inputs;
 
 }
 
-std::vector<Neuron*> NeuralNetwork::getOutputs() {
+std::vector<StaticNeuron*> StaticNeuralNetwork::getOutputs() {
 
 	return outputs;
 
 }
 
-std::vector<Neuron*> NeuralNetwork::getArray(unsigned int start, unsigned int end) {
+std::vector<StaticNeuron*> StaticNeuralNetwork::getArray(unsigned int start, unsigned int end) {
 
-	std::vector<Neuron*> temp(end - start + 1);
+	std::vector<StaticNeuron*> temp(end - start + 1);
 
 	for (int i = 0; i <= end - start; i++) {
 
@@ -32,14 +32,14 @@ std::vector<Neuron*> NeuralNetwork::getArray(unsigned int start, unsigned int en
 
 }
 
-Neuron* NeuralNetwork::getNeuron(unsigned int index) {
+StaticNeuron* StaticNeuralNetwork::getNeuron(unsigned int index) {
 
 	return &neurons.at(index);
 
 }
 
 // Runs the neural network and returns the outputs in a list.
-std::vector<float> NeuralNetwork::runNeuralNetwork(std::vector<float>* finputs) {
+std::vector<float> StaticNeuralNetwork::runNeuralNetwork(std::vector<float>* finputs) {
 
 	if (finputs->size() != inputs.size()) {
 
@@ -60,7 +60,7 @@ std::vector<float> NeuralNetwork::runNeuralNetwork(std::vector<float>* finputs) 
 	std::vector<float> rv;
 
 	// Call getValue() for all output neurons and copy results to returnVector.
-	for (Neuron* n : outputs) {
+	for (StaticNeuron* n : outputs) {
 
 		rv.push_back(n->getValue());
 
@@ -74,13 +74,13 @@ std::vector<float> NeuralNetwork::runNeuralNetwork(std::vector<float>* finputs) 
 // Neuron creation and handling.
 
 // Sets up the input and output nodes.
-void NeuralNetwork::setNeurons(unsigned int numInputs, unsigned int numOutputs, unsigned int h) {
+void StaticNeuralNetwork::setNeurons(unsigned int numInputs, unsigned int numOutputs, unsigned int h) {
 
 	// Completely clear the network and reset neuron ID counter.
 	neurons.clear();
 	inputs.clear();
 	outputs.clear();
-	Neuron::resetIDCounter();
+	StaticNeuron::resetIDCounter();
 
 	// Reset and re-initialize the input/output pointer lists.
 	neurons.resize(numInputs + numOutputs + h);
@@ -117,7 +117,7 @@ void NeuralNetwork::setNeurons(unsigned int numInputs, unsigned int numOutputs, 
 
 */
 
-void NeuralNetwork::loadFromFile(std::string fileName) {
+void StaticNeuralNetwork::loadFromFile(std::string fileName) {
 
 	fileName += ".nn";
 

@@ -1,35 +1,42 @@
-#include "tneuron.h"
+#include "dynamic_neuron.h"
 #include <iostream>
 #include <random>
 #include <cmath> // For inverseNonlinear()
 
 using namespace ActivationFunction;
 
-TrainingNeuron::TrainingNeuron() {
+// Static member definition.
+unsigned int DynamicNeuron::idCounter = 0;
 
-	// No need to do ID handling or anything since it's
-	// included in the parent class' constructor.
+//================================================================================
+// Constructors.
+
+DynamicNeuron::DynamicNeuron() {
+
+	ID = idCounter;
+	idCounter++;
+
+	av = 0;
+	finished = false;
+	bias = 0;
+	af = identity;
+	numParents = 0;
 
 	// Placeholder.
 	pos.x = 10;
 	pos.y = 10;
-
-	numParents = 0;
-	dCost = 0;
 
 }
 
 //================================================================================
 // Getters & setters.
 
-float TrainingNeuron::getValue(bool recurse) {
-
-	if (recurse) numParents++;
+float DynamicNeuron::getValue() {
 
 	if (finished)
 		return av;
 
-	float temp = 0, avReturn = av;
+	float temp = 0;
 
 	// Mark the node as "done" in case future nodes wish to retrieve its value.
 	// It's important to keep this before the for loop to avoid infinite recursion.
@@ -38,7 +45,7 @@ float TrainingNeuron::getValue(bool recurse) {
 	for (int nc = 0; nc < ncs.size(); nc++) {
 
 		// Weight multiplication is already done in retrieveValue().
-		temp += ncs[nc].retrieveValue();
+		temp += ncs[nc].retrieveValue(true);
 
 	}
 
@@ -48,53 +55,54 @@ float TrainingNeuron::getValue(bool recurse) {
 
 	// The neuron's activation value is updated regardless, but
 	// the old value is returned if `recurse` is set to false.
-	return (recurse) ? av : avReturn;
+	return av;
 
 }
 
-void TrainingNeuron::setValue(float v) {
+void DynamicNeuron::setValue(float v) {
 
 	av = v;
 
 }
 
-void TrainingNeuron::setUndone() {
+void DynamicNeuron::setUndone() {
 
 	finished = false;
+	numParents = 0;
 
 }
 
-void TrainingNeuron::setDone() {
+void DynamicNeuron::setDone() {
 
 	finished = true;
 
 }
 
-unsigned int TrainingNeuron::getNumConnections() {
+unsigned int DynamicNeuron::getNumConnections() {
 
 	return ncs.size();
 
 }
 
-void TrainingNeuron::addConnection(TrainingNeuron* n) {
+void DynamicNeuron::addConnection(DynamicNeuron* n) {
 
-	ncs.push_back(TrainingNeuralConnection(n));
-
-}
-
-void TrainingNeuron::addConnection(TrainingNeuron* n, float w) {
-
-	ncs.push_back(TrainingNeuralConnection(n, w));
+	ncs.push_back(DynamicNeuralConnection(n));
 
 }
 
-unsigned int TrainingNeuron::getID() {
+void DynamicNeuron::addConnection(DynamicNeuron* n, float w) {
+
+	ncs.push_back(DynamicNeuralConnection(n, w));
+
+}
+
+unsigned int DynamicNeuron::getID() {
 
 	return ID;
 
 }
 
-TrainingNeuron* TrainingNeuron::getChild(int index) {
+DynamicNeuron* DynamicNeuron::getChild(int index) {
 
 	if (index < 0 || index >= ncs.size()) {
 
@@ -106,19 +114,19 @@ TrainingNeuron* TrainingNeuron::getChild(int index) {
 
 }
 
-float TrainingNeuron::getBias() {
+float DynamicNeuron::getBias() {
 
 	return bias;
 
 }
 
-void TrainingNeuron::setBias(float b) {
+void DynamicNeuron::setBias(float b) {
 
 	bias = b;
 
 }
 
-void TrainingNeuron::getDerivative(std::vector<int>* countRecord, std::vector<float>* derivRecord, float dcost_) {
+void DynamicNeuron::getDerivative(std::vector<int>* countRecord, std::vector<std::vector<float>>* derivRecord, float dcost_) {
 
 	/*
 	* The derivative of the cost with respect to this neuron's activation value
@@ -127,26 +135,33 @@ void TrainingNeuron::getDerivative(std::vector<int>* countRecord, std::vector<fl
 	* its child connections.
 	*/
 
-	// Cost derivative with respect to neuron before nonlinear activation function.
+	// Cost derivative with respect to neuron activation before activation function.
 	float preAFDeriv = dcost_ * getAVDerivative();
 
+	// DO NOT shorten to if else, the double if is required for the edge case that
+	// countRecord is exactly 1 below completion.
 	if (!isComplete(countRecord->at(this->ID))) {
 
 		// Update the thread records.
 		countRecord->at(this->ID)++;
-		derivRecord->at(this->ID) += preAFDeriv;
+		derivRecord->at(this->ID).at(0) += preAFDeriv;
 
 	}
 
-	// DO NOT shorten to if else, the double if is required for the edge case that
-	// countRecord is exactly 1 below completion.
 	if (isComplete(countRecord->at(this->ID))) {
 
-		for (TrainingNeuralConnection nc : ncs) {
+		// Derivative w/ respect to bias is the same as w/ respect to av before activation function.
+		// No need to do anything for the bias.
 
-			float childDerivative = preAFDeriv * nc.weight;
+		for (int nc = 0; nc < ncs.size(); nc++) {
 
-			nc.prevNeuron->getDerivative(countRecord, derivRecord, childDerivative);
+			// Derivative of cost w/ respect to connection = child neuron value * dervative of cost w/ respect to parent neuron.
+			derivRecord->at(this->ID).at(nc + 1) = ncs.at(nc).retrieveValue(false) * derivRecord->at(this->ID).at(0);
+
+			// Derivative of cost w/ respect to child av (after activation function).
+			float childDerivative = derivRecord->at(this->ID).at(0) * ncs.at(nc).weight;
+
+			ncs.at(nc).prevNeuron->getDerivative(countRecord, derivRecord, childDerivative);
 
 		}
 
@@ -154,28 +169,30 @@ void TrainingNeuron::getDerivative(std::vector<int>* countRecord, std::vector<fl
 
 }
 
-float TrainingNeuron::getAVDerivative() {
+float DynamicNeuron::getAVDerivative() {
+
+	float a, b, c;
 
 	switch (af) {
 
 	case arcHyperTan: return 1 / (1 - av * av);
 	case ELU: return (av < 0) ? exp(av) : 1;
 	case hyperTan:
-		float temp = tanh(av);
-		return 1 - temp * temp;
+		a = tanh(av);
+		return 1 - a * a;
 	case identity: return 1;
 	case mish:
-		float a = 1 + exp(av);
-		float b = log(a);
-		float c = tanh(b);
+		a = 1 + exp(av);
+		b = log(a);
+		c = tanh(b);
 		return c + av * (1 - c * c) * (a - 1) / a;
 	case ReLU: return (av < 0) ? 0 : 1;
 	case step: return 0;
 	case sigmoid:
-		float temp = 1 + exp(-av);
-		return -1 / temp / temp;
+		a = 1 + exp(-av);
+		return -1 / (a * a);
 	case softplus:
-		float a = exp(av);
+		a = exp(av);
 		return a / (a + 1);
 	case swish:
 		a = exp(-av);
@@ -186,7 +203,7 @@ float TrainingNeuron::getAVDerivative() {
 
 }
 
-void TrainingNeuron::applyNonlinear() {
+void DynamicNeuron::applyNonlinear() {
 
 	switch (af) {
 
@@ -206,7 +223,7 @@ void TrainingNeuron::applyNonlinear() {
 
 }
 
-void TrainingNeuron::setupAverageConnections(float min, float max) {
+void DynamicNeuron::setupAverageConnections(float min, float max) {
 
 	// Set up rng.
 	std::mt19937 rng;
@@ -227,7 +244,7 @@ void TrainingNeuron::setupAverageConnections(float min, float max) {
 
 }
 
-void TrainingNeuron::moveWeight(int index, float value) {
+void DynamicNeuron::moveWeight(int index, float value) {
 
 	if (index < 0 || index >= ncs.size()) return;
 
@@ -238,7 +255,7 @@ void TrainingNeuron::moveWeight(int index, float value) {
 
 }
 
-void TrainingNeuron::moveMembers(std::vector<float>* values, float strength) {
+void DynamicNeuron::moveMembers(std::vector<float>* values, float strength) {
 
 	if (values->size() != ncs.size() + 1) {
 
@@ -247,24 +264,17 @@ void TrainingNeuron::moveMembers(std::vector<float>* values, float strength) {
 
 	}
 
+	bias += values->at(0) * strength;
+
 	for (int val = 0; val < ncs.size(); val++) {
 
-		ncs[val].weight += values->at(val) * strength;
-
-	}
-
-	bias += values->back() * strength;
-
-	if (abs(bias) > 1) {
-
-		int asdf = 0;
-		asdf += 1;
+		ncs[val].weight += values->at(val + 1) * strength;
 
 	}
 
 }
 
-void TrainingNeuron::setActivationFunction(ActivationFunction::NonLinearMethod method) {
+void DynamicNeuron::setActivationFunction(ActivationFunction::NonLinearMethod method) {
 
 	af = method;
 
@@ -273,19 +283,19 @@ void TrainingNeuron::setActivationFunction(ActivationFunction::NonLinearMethod m
 //================================================================================
 // numParents
 
-void TrainingNeuron::incrementParent() {
+void DynamicNeuron::incrementParent() {
 
 	numParents++;
 
 }
 
-bool TrainingNeuron::isComplete(unsigned int np) {
+bool DynamicNeuron::isComplete(unsigned int np) {
 
 	return (np >= numParents);
 
 }
 
-void TrainingNeuron::resetNumParents() {
+void DynamicNeuron::resetNumParents() {
 
 	numParents = 0;
 
@@ -294,20 +304,35 @@ void TrainingNeuron::resetNumParents() {
 //================================================================================
 // File handling.
 
-void TrainingNeuron::saveConnectionsStatus(std::ofstream* file) {
+/*
+Each neuron is saved to file in the following format:
+
+- Activation Function ID
+- Bias
+- # of connections to other neurons
+	- ID of what neuron to connect to
+	- Weight
+	- ID of what neuron to connect to
+	- Weight
+	...
+
+There are no delimiters between neurons as the number of
+connections and thus the length is known beforehand.
+*/
+void DynamicNeuron::saveConnectionsStatus(std::ofstream* file) {
 
 	// Write activation function.
 	file->write((char*) &af, sizeof(uint8_t));
 
 	// Write bias.
-	file->write((char*)&bias, sizeof(float));
+	file->write((char*) &bias, sizeof(float));
 
 	// Write num connections.
 	int size = ncs.size();
 	file->write((char*) &size, sizeof(int));
 
 	// Write the actual connections.
-	for (TrainingNeuralConnection nc : ncs) {
+	for (DynamicNeuralConnection nc : ncs) {
 
 		unsigned int ID = nc.prevNeuron->getID();
 		file->write((char*) &ID, sizeof(unsigned int));
@@ -320,14 +345,14 @@ void TrainingNeuron::saveConnectionsStatus(std::ofstream* file) {
 //================================================================================
 // Misc.
 
-void TrainingNeuron::clearValues() {
+void DynamicNeuron::clearValues() {
 
 	values.clear();
 
 }
 
-void TrainingNeuron::resetIDCounter() {
+void DynamicNeuron::resetIDCounter() {
 
-	idCounter = 0;
+	DynamicNeuron::idCounter = 0;
 
 }
