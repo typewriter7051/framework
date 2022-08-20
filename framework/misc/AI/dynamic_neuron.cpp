@@ -68,7 +68,6 @@ void DynamicNeuron::setValue(float v) {
 void DynamicNeuron::setUndone() {
 
 	finished = false;
-	numParents = 0;
 
 }
 
@@ -102,18 +101,6 @@ unsigned int DynamicNeuron::getID() {
 
 }
 
-DynamicNeuron* DynamicNeuron::getChild(int index) {
-
-	if (index < 0 || index >= ncs.size()) {
-
-		std::cout << "ERROR: called getChild() index out of bounds.\n";
-
-	}
-	
-	return ncs[index].prevNeuron;
-
-}
-
 float DynamicNeuron::getBias() {
 
 	return bias;
@@ -140,7 +127,7 @@ void DynamicNeuron::getDerivative(std::vector<int>* countRecord, std::vector<std
 
 	// DO NOT shorten to if else, the double if is required for the edge case that
 	// countRecord is exactly 1 below completion.
-	if (!isComplete(countRecord->at(this->ID))) {
+	if (countRecord->at(this->ID) < numParents) {
 
 		// Update the thread records.
 		countRecord->at(this->ID)++;
@@ -148,7 +135,7 @@ void DynamicNeuron::getDerivative(std::vector<int>* countRecord, std::vector<std
 
 	}
 
-	if (isComplete(countRecord->at(this->ID))) {
+	if (countRecord->at(this->ID) >= numParents) {
 
 		// Derivative w/ respect to bias is the same as w/ respect to av before activation function.
 		// No need to do anything for the bias.
@@ -244,17 +231,6 @@ void DynamicNeuron::setupAverageConnections(float min, float max) {
 
 }
 
-void DynamicNeuron::moveWeight(int index, float value) {
-
-	if (index < 0 || index >= ncs.size()) return;
-
-	ncs[index].weight += value;
-
-	// Manually set finished to false since AV needs to be recalculated.
-	finished = false;
-
-}
-
 void DynamicNeuron::moveMembers(std::vector<float>* values, float strength) {
 
 	if (values->size() != ncs.size() + 1) {
@@ -286,12 +262,6 @@ void DynamicNeuron::setActivationFunction(ActivationFunction::NonLinearMethod me
 void DynamicNeuron::incrementParent() {
 
 	numParents++;
-
-}
-
-bool DynamicNeuron::isComplete(unsigned int np) {
-
-	return (np >= numParents);
 
 }
 
@@ -344,12 +314,6 @@ void DynamicNeuron::saveConnectionsStatus(std::ofstream* file) {
 
 //================================================================================
 // Misc.
-
-void DynamicNeuron::clearValues() {
-
-	values.clear();
-
-}
 
 void DynamicNeuron::resetIDCounter() {
 

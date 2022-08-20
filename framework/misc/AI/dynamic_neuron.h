@@ -56,8 +56,6 @@ public:
 
 	unsigned int getID();
 
-	DynamicNeuron* getChild(int i);
-
     float getBias();
 	void setBias(float b);
 
@@ -69,7 +67,6 @@ public:
 
 	void getDerivative(std::vector<int>* countRecord, std::vector<std::vector<float>>* derivRecord, float dcost);
 
-	void moveWeight(int index, float value);
 	void moveMembers(std::vector<float>* values, float strength);
 
 	void setActivationFunction(ActivationFunction::NonLinearMethod method);
@@ -108,8 +105,6 @@ public:
 
 	void incrementParent();
 
-	bool isComplete(unsigned int np);
-
 	void resetNumParents();
 
     //--------------------------------------------------------------------------------
@@ -119,8 +114,6 @@ public:
 
     //--------------------------------------------------------------------------------
 	// Misc.
-
-	void clearValues();
 
 	static void resetIDCounter();
 
@@ -136,7 +129,6 @@ private:
 	float av;
 	float bias;
 	ActivationFunction::NonLinearMethod af;
-	std::vector<float> values;
 	AI::NeuronPos pos;
 
 	std::vector<DynamicNeuralConnection> ncs;

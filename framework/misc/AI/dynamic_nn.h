@@ -33,6 +33,8 @@ public:
 	//--------------------------------------------------------------------------------
 	// Training.
 
+	void resetNeurons();
+
 	void trainNeuralNetwork(std::vector<float> samples, float stepSize);
 
 	//Neuron* getNeuron(unsigned int index);
@@ -50,11 +52,8 @@ public:
 
 	void setActivationFunction(std::vector<DynamicNeuron*> neurons, ActivationFunction::NonLinearMethod method);
 
-	// Trims the neuron with the lowest cost derivative.
-	void dropout();
-
-	// Trims `num` number of the lowest valued connections.
-	void trimDeadConnections(unsigned int num);
+	// Removes any neurons or connections below (average value across network) * threshold.
+	void trimDead(float threshold);
 
 	// NOTE: liquid neural networks require numerical differentiation
 	// since we have no idea which connections are recursive.
@@ -68,17 +67,11 @@ public:
 	void saveToFile(std::string fileName);
 	void loadFromFile(std::string fileName);
 
-	//void exportToFile(std::string fileName, bool IDComp, );
+	//void bakeToStaticFile(std::string fileName, bool IDComp, );
 
 private:
 
 	void setInputs(std::vector<float>* i);
-
-	// Used for recording the nn state for training.
-	// DEPRACATED
-	bool recordMode;
-	// DEPRACATED
-	std::ofstream recordFile;
 
 	// Pointers to the input and output neurons within the previous list.
 	std::vector<DynamicNeuron*> inputs, outputs;
@@ -91,17 +84,6 @@ private:
 	unsigned int is, os, hn;
 
 	void moveMembers(std::vector<std::vector<float>>* values, float strength);
-
-	// DEPRACATED
-	float getCostP(std::vector<float>* foutputs);
-
-	// Runs the neural network without resetting input values.
-	std::vector<float> rerunNeuralNetwork();
-
-	// DEPRACATED
-	bool readState(DynamicNeuralNetwork* nn, std::ifstream* trainFile);
-	// DEPRACATED
-	void readState(DynamicNeuralNetwork* nn, DynamicNeuralNetwork* on);
 
 	//--------------------------------------------------------------------------------
 	// Network wrangling.

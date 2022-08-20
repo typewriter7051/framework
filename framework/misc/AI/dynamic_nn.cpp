@@ -7,7 +7,6 @@
 
 DynamicNeuralNetwork::DynamicNeuralNetwork() {
 
-	recordMode = false;
 	is = 0;
 	os = 0;
 	hn = 0;
@@ -89,12 +88,7 @@ std::vector<float> DynamicNeuralNetwork::runNeuralNetwork(std::vector<float>* fi
 	}
 
 	// Clear any metadata for all neurons.
-	for (int n = 0; n < neurons.size(); n++) {
-
-		neurons[n].setUndone();
-		neurons[n].resetNumParents();
-
-	}
+	resetNeurons();
 
 	// Set up the input neurons.
 	setInputs(finputs);
@@ -126,38 +120,7 @@ float DynamicNeuralNetwork::getCost(std::vector<float>* finputs, std::vector<flo
 	}
 
 	// Calculate standard deviation from expected output (cost).
-
 	float sd = 0;
-
-	for (int i = 0; i < actualOutput.size(); i++) {
-
-		sd += (actualOutput.at(i) - foutputs->at(i)) * (actualOutput.at(i) - foutputs->at(i));
-		//std::cout << "Expected output vs actual output: " << foutputs->at(i) << ", " << actualOutput.at(i) << std::endl;
-
-	}
-
-	sd = sqrt(sd) / float(actualOutput.size());
-
-	return sd;
-
-}
-
-float DynamicNeuralNetwork::getCostP(std::vector<float>* foutputs) {
-
-	std::vector<float> actualOutput = rerunNeuralNetwork();
-
-	if (foutputs->size() != actualOutput.size()) {
-
-		std::cout << "\nWARNING: EXPECTED OUTPUTS SIZE DOESNT MATCH NN OUTPUT SIZE";
-		std::cout << " outputs passed (" << foutputs->size() << ") expected (" << actualOutput.size() << ")";
-		return 1;
-
-	}
-
-	// Calculate standard deviation from expected output (cost).
-
-	float sd = 0;
-
 	for (int i = 0; i < actualOutput.size(); i++) {
 
 		sd += (actualOutput.at(i) - foutputs->at(i)) * (actualOutput.at(i) - foutputs->at(i));
@@ -172,32 +135,6 @@ float DynamicNeuralNetwork::getCostP(std::vector<float>* foutputs) {
 
 //================================================================================
 // Network wrangling.
-
-// Runs the neural network without resetting input values.
-std::vector<float> DynamicNeuralNetwork::rerunNeuralNetwork() {
-
-	// Set inputs to be done.
-	for (DynamicNeuron* n : inputs) n->setDone();
-
-	// Vector to be returned.
-	std::vector<float> rv;
-
-	// Call getValue() for all output neurons and copy results to returnVector.
-	for (DynamicNeuron* n : outputs) {
-
-		rv.push_back(n->getValue());
-
-	}
-
-	// Clear finished status for all neurons.
-	// This is done afterwards becuase we don't want to reset the
-	// manually set done status of neurons before running.
-	for (int n = 0; n < neurons.size(); n++)
-		neurons[n].setUndone();
-
-	return rv;
-
-}
 
 // Sets up the input and output nodes.
 void DynamicNeuralNetwork::setNeurons(unsigned int numInputs, unsigned int numOutputs, unsigned int h) {
@@ -248,43 +185,12 @@ void DynamicNeuralNetwork::setActivationFunction(std::vector<DynamicNeuron*> neu
 
 }
 
-bool DynamicNeuralNetwork::readState(DynamicNeuralNetwork* nn, std::ifstream* trainFile) {
+void DynamicNeuralNetwork::resetNeurons() {
 
-	for (int neuron = 0; neuron < nn->neurons.size(); neuron++) {
+	for (int n = 0; n < neurons.size(); n++) {
 
-		float av = 0;
-		trainFile->read((char*)&av, sizeof(float));
-
-		if (trainFile->eof()) {
-
-			trainFile->close();
-			return false;
-
-		}
-
-		nn->neurons.at(neuron).setValue(av);
-
-	}
-
-	return true;
-
-}
-
-// Does not overwrite inputs/outputs.
-void DynamicNeuralNetwork::readState(DynamicNeuralNetwork* nn, DynamicNeuralNetwork* on) {
-
-	if (nn->neurons.size() != on->neurons.size() ||
-		nn->getNumUnhiddenNeurons() != on->getNumUnhiddenNeurons()) {
-
-		std::cout << "WARNING: ATTEMPTED TO COPY STATE OF UNIDENTICAL NETWORKS!";
-		return;
-
-	}
-
-	for (int neuron = nn->getNumUnhiddenNeurons(); neuron < nn->neurons.size(); neuron++) {
-
-		float av = on->neurons.at(neuron).getValue();
-		nn->neurons.at(neuron).setValue(av);
+		neurons[n].setUndone();
+		neurons[n].resetNumParents();
 
 	}
 
@@ -320,16 +226,17 @@ void DynamicNeuralNetwork::trainNeuralNetwork(std::vector<float> samples, float 
 	Example: bias of neuron 2 would be derivRecord[1][0].
 	*/
 	std::vector<std::vector<float>> avgDerivRecord;
+	float numParams = 0;
 
 	for (int n = 0; n < neurons.size(); n++) { // For all neurons.
 
 		std::vector<float> temp;
 		temp.resize(neurons.at(n).getNumConnections() + 1); // The +1 is for including the bias.
+		numParams += neurons.at(n).getNumConnections() + 1;
 		avgDerivRecord.push_back(temp);
 
 	}
 
-	// TODO: calculate countRecord.
 	std::vector<int> countRecord;
 	countRecord.resize(neurons.size());
 	std::vector<std::vector<float>> derivRecord = avgDerivRecord;
@@ -346,6 +253,9 @@ void DynamicNeuralNetwork::trainNeuralNetwork(std::vector<float> samples, float 
 		std::vector<float> newExpectedOutputs(samples.begin() + index + is, samples.begin() + index + is + os);
 
 		float cost = getCost(&newInputs, &newExpectedOutputs);
+
+		// Reset countRecord.
+		for (int i = 0; i < countRecord.size(); i++) countRecord.at(i) = 0;
 
 		//----------------------------------------------------------------------------
 		// Calculate derivatives.
@@ -374,7 +284,7 @@ void DynamicNeuralNetwork::trainNeuralNetwork(std::vector<float> samples, float 
 		for (int n = 0; n < neurons.size(); n++) {
 			for (int nc = 0; nc < neurons.at(n).getNumConnections() + 1; nc++) {
 
-				avgDerivRecord.at(n).at(nc) -= derivRecord.at(n).at(nc) / float(batchSize);
+				avgDerivRecord.at(n).at(nc) -= derivRecord.at(n).at(nc) / (float(batchSize) * numParams);
 
 			}
 		}
@@ -387,102 +297,6 @@ void DynamicNeuralNetwork::trainNeuralNetwork(std::vector<float> samples, float 
 	moveMembers(&avgDerivRecord, stepSize);
 
 	// TODO: Trim neurons if needed.
-
-	/*
-
-	//--------------------------------------------------------------------------------
-	// Member definitions.
-
-	is = inputs.size();
-	os = outputs.size();
-	hn = neurons.size() - is - os;
-
-	TrainingNeuralNetwork loadState;
-	loadState.setNeurons(is, os, hn);
-
-	unsigned int batchSize = samples.size() / float(is + os);
-
-	// List of list of each neuron's derivatives (including bias for each neuron).
-	std::vector<std::vector<float>> derivatives;
-
-	// Initialize the derivatives list.
-	derivatives.clear();
-	derivatives.resize(neurons.size());
-
-	for (int n = 0; n < neurons.size(); n++) {
-
-		// The +1 is for including the bias.
-		derivatives.at(n).resize(neurons.at(n).getNumConnections() + 1);
-
-	}
-
-	//--------------------------------------------------------------------------------
-
-	for (int i = 0; i < batchSize; i++) {
-
-		//--------------------------------------------------------------------------------
-		// Read the next inputs and outputs and create the loadstate.
-
-		int index = i * (is + os);
-
-		// When passing iterators to the vector constructor, the upper range is exclusive (no need for "- 1").
-		std::vector<float> newInputs(samples.begin() + index, samples.begin() + index + is);
-		std::vector<float> newOutputs(samples.begin() + index + is, samples.begin() + index + is + os);
-
-		// Set up the input neurons.
-		setInputs(&newInputs);
-
-		readState(&loadState, this);
-
-		//--------------------------------------------------------------------------------
-		// Update the derivatives list.
-
-		// Iterate through every neuron (except inputs because they have no child neurons).
-		for (int n = is; n < neurons.size(); n++) {
-
-			// Retrieve the neuron pointer from the network.
-			TrainingNeuron* neuron = &neurons.at(n);
-
-			// Get the list of pointers to its child neurons (inputs).
-			std::vector<TrainingNeuron*> connections = neuron->getConnections();
-
-			readState(this, &loadState);
-			float cost = this->getCostP(&newOutputs);
-
-			// Iterate through weights and find the
-			// cost's derivative with respect to weight.
-			for (int cn = 0; cn < neuron->getNumConnections(); cn++) {
-
-				// Weight.
-				readState(this, &loadState);
-				neuron->moveWeight(cn, stepSize);
-				float cost2 = this->getCostP(&newOutputs);
-				neuron->moveWeight(cn, -stepSize);
-
-				float dcost = (cost2 - cost) / stepSize;
-				derivatives.at(n).at(cn) -= dcost / float(batchSize);
-
-			}
-
-			// Bias.
-			readState(this, &loadState);
-			neuron->moveBias(stepSize);
-			float cost2 = this->getCostP(&newOutputs);
-			neuron->moveBias(-stepSize);
-
-			float dcost = (cost2 - cost) / stepSize;
-			derivatives.at(n).back() -= dcost / float(batchSize);
-
-		}
-
-	}
-
-	//--------------------------------------------------------------------------------
-	// Move the members after calculating gradient.
-
-	moveMembers(&derivatives, strength);
-
-	*/
 
 }
 
