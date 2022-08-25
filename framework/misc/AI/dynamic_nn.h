@@ -52,14 +52,13 @@ public:
 
 	void setActivationFunction(std::vector<DynamicNeuron*> neurons, ActivationFunction::NonLinearMethod method);
 
+	void removeNeuron(unsigned int ID);
 	// Removes any neurons or connections below (average value across network) * threshold.
 	void trimDead(float threshold);
 
 	// NOTE: liquid neural networks require numerical differentiation
 	// since we have no idea which connections are recursive.
 	void growNeuron();
-
-	void shrinkToFit();
 
 	//--------------------------------------------------------------------------------
 	// File handling.
@@ -84,11 +83,5 @@ private:
 	unsigned int is, os, hn;
 
 	void moveMembers(std::vector<std::vector<float>>* values, float strength);
-
-	//--------------------------------------------------------------------------------
-	// Network wrangling.
-
-	// Keeps track of which neurons were removed for shinkToFit().
-	std::vector<unsigned int> removedNeuronIDs;
 
 };

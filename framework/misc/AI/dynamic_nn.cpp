@@ -185,6 +185,122 @@ void DynamicNeuralNetwork::setActivationFunction(std::vector<DynamicNeuron*> neu
 
 }
 
+void DynamicNeuralNetwork::removeNeuron(unsigned int ID) {
+
+	if (ID < is + os) {
+
+		std::cout << "WARNING: ATTEMPTED TO CALL removeNeuron() TO REMOVE INPUT OR OUTPUT NEURON!\n";
+		return;
+
+	}
+
+	// Remove connections to the removed neuron.
+	for (int n = is; n < neurons.size(); n++)
+		neurons.at(n).removeConnection(ID);
+
+	// Decrement the pointer to every neuron after the one removed.
+	for (int n = is; n < neurons.size(); n++)
+		neurons.at(n).decrementConnections(ID);
+
+	// Decrement the ID of every neuron after the one removed.
+	for (int n = ID + 1; n < neurons.size(); n++)
+		neurons.at(n).decrementID();
+
+	std::cout << "Erasing neuron " << ID << std::endl;
+
+	// Finally erase the neuron object from the list.
+	neurons.erase(neurons.begin() + ID);
+	hn--;
+}
+
+// TODO
+void DynamicNeuralNetwork::trimDead(float threshold) {
+
+	float neuronAvg = 0, ncAvg = 0;
+	std::vector<unsigned int> removedNeurons;
+	
+	for (int n = 0; n < neurons.size(); n++) {
+
+		ncAvg += neurons.at(n).getAvgConnection() / float(neurons.size());
+		neuronAvg += abs(neurons.at(n).getValue()) / float(neurons.size());
+
+	}
+
+	
+	for (int n = is; n < neurons.size(); n++) {
+
+		neurons.at(n).removeDeadConnections(ncAvg * threshold);
+
+		// TODO: this only compares the neuron's current value to the threshold instead of its average value.
+		if (abs(neurons.at(n).getValue()) < neuronAvg * threshold && n >= is + os)
+			//removedNeurons.push_back(n);
+			removeNeuron(n);
+
+	}
+
+
+
+	/*
+	// TODO reinstantiate the entire list of neurons.
+	std::vector<DynamicNeuron> newNeurons;
+	DynamicNeuron::resetIDCounter();
+	newNeurons.resize(neurons.size() - removedNeurons.size());
+	hn -= removedNeurons.size();
+	for (int n = 0; n < neurons.size(); n++) {
+
+		// Keep skipping until a non-removed neuron.
+		bool isRemoved = true;
+		while (isRemoved) {
+
+			isRemoved = false;
+			for (unsigned int i : removedNeurons) {
+				if (n == i) isRemoved = true;
+			}
+
+			if (isRemoved) n++;
+
+		}
+
+		// Copy over bias.
+		newNeurons.at(n).setBias(neurons.at(n).getBias());
+
+		for (DynamicNeuron::DynamicNeuralConnection nc : neurons.at(n).ncs) {
+
+			// Find if the connection points towards a removed neuron.
+			bool isARemovedNeuron = false;
+			for (unsigned int i : removedNeurons) {
+				if (nc.prevNeuron->getID() == i) isARemovedNeuron = true;
+			}
+
+			if (!isARemovedNeuron) {
+
+				// Decrement connected neuron based on how many neurons before it were removed.
+				int decrement = 0;
+				for (unsigned int i : removedNeurons) {
+					if (nc.prevNeuron->getID() > i) decrement++;
+				}
+
+				// Add connection and copy over weight.
+				newNeurons.at(n).addConnection(&newNeurons.at(nc.prevNeuron->getID() - decrement), nc.weight);
+
+			}
+
+		}
+
+	}
+
+	neurons = newNeurons;
+	*/
+
+}
+
+// TODO
+void DynamicNeuralNetwork::growNeuron() {
+
+
+
+}
+
 void DynamicNeuralNetwork::resetNeurons() {
 
 	for (int n = 0; n < neurons.size(); n++) {
@@ -275,7 +391,7 @@ void DynamicNeuralNetwork::trainNeuralNetwork(std::vector<float> samples, float 
 			outputs.at(o)->getDerivative(&countRecord, &derivRecord, dCost);
 
 		}
-
+		
 		int derivativesDone = 0;
 
 		//----------------------------------------------------------------------------
@@ -313,32 +429,6 @@ void DynamicNeuralNetwork::setInputs(std::vector<float>* i) {
 
 		inputs.at(n)->setValue(i->at(n));
 		inputs.at(n)->setDone();
-
-	}
-
-}
-
-void DynamicNeuralNetwork::moveMembers(std::vector<std::vector<float>>* values, float strength) {
-
-	// First check the size of the first dimension.
-	if (values->size() != neurons.size()) {
-
-		std::cout << "\nWARNING: called function moveMembers() with invalid vector size!\n";
-		return;
-
-	}
-
-	for (int n = 0; n < neurons.size(); n++) {
-
-		// Check the size of each secondary list.
-		if (values->at(n).size() != neurons.at(n).getNumConnections() + 1) {
-
-			std::cout << "\nWARNING: called function moveMembers() with invalid vector size!\n";
-			return;
-
-		}
-
-		neurons[n].moveMembers(&values->at(n), strength);
 
 	}
 
@@ -431,5 +521,34 @@ void DynamicNeuralNetwork::saveToFile(std::string fileName) {
 	}
 
 	file.close();
+
+}
+
+//================================================================================
+// Training.
+
+void DynamicNeuralNetwork::moveMembers(std::vector<std::vector<float>>* values, float strength) {
+
+	// First check the size of the first dimension.
+	if (values->size() != neurons.size()) {
+
+		std::cout << "\nWARNING: called function moveMembers() with invalid vector size!\n";
+		return;
+
+	}
+
+	for (int n = 0; n < neurons.size(); n++) {
+
+		// Check the size of each secondary list.
+		if (values->at(n).size() != neurons.at(n).getNumConnections() + 1) {
+
+			std::cout << "\nWARNING: called function moveMembers() with invalid vector size!\n";
+			return;
+
+		}
+
+		neurons[n].moveMembers(&values->at(n), strength);
+
+	}
 
 }

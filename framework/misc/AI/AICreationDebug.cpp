@@ -39,7 +39,7 @@ float dataFunction(float input) {
 
 }
 
-void setupRecordingFile(TrainingNeuralNetwork* nn) {
+void setupRecordingFile(DynamicNeuralNetwork* nn) {
 
 	std::vector<float> inputs, expectedOutputs;
 

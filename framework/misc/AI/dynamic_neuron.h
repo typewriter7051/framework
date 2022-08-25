@@ -65,6 +65,8 @@ public:
 	void setUndone();
 	void setDone();
 
+	float getAvgConnection();
+
 	void getDerivative(std::vector<int>* countRecord, std::vector<std::vector<float>>* derivRecord, float dcost);
 
 	void moveMembers(std::vector<float>* values, float strength);
@@ -102,9 +104,7 @@ public:
 	// numParents
 
 	unsigned int numParents; // Number of parent neuron connections in the network.
-
 	void incrementParent();
-
 	void resetNumParents();
 
     //--------------------------------------------------------------------------------
@@ -117,10 +117,16 @@ public:
 
 	static void resetIDCounter();
 
+	void decrementID();
+	void decrementConnections(unsigned int ID);
+	void removeConnection(unsigned int neuronID);
+	void removeDeadConnections(float threshold);
+
+	std::vector<DynamicNeuralConnection> ncs;
+
 private:
 
 	float getAVDerivative();
-
 	void applyNonlinear();
 
 	bool finished;
@@ -131,6 +137,6 @@ private:
 	ActivationFunction::NonLinearMethod af;
 	AI::NeuronPos pos;
 
-	std::vector<DynamicNeuralConnection> ncs;
+
 
 };

@@ -113,6 +113,19 @@ void DynamicNeuron::setBias(float b) {
 
 }
 
+float DynamicNeuron::getAvgConnection() {
+
+	float avg = 0;
+	for (int nc = 0; nc < ncs.size(); nc++) {
+
+		avg += abs(ncs.at(nc).weight) / float(ncs.size());
+
+	}
+
+	return avg;
+
+}
+
 void DynamicNeuron::getDerivative(std::vector<int>* countRecord, std::vector<std::vector<float>>* derivRecord, float dcost_) {
 
 	/*
@@ -218,12 +231,8 @@ void DynamicNeuron::setupAverageConnections(float min, float max) {
 	dis = std::make_unique<std::uniform_real_distribution<float>>(min, max);
 
 	// Randomize weights.
-	for (int nc = 0; nc < ncs.size(); nc++) {
-
-		rng.seed(ID * ncs[nc].prevNeuron->getID());
+	for (int nc = 0; nc < ncs.size(); nc++)
 		ncs[nc].weight = (*dis)(rng) / float(ncs.size());
-
-	}
 
 	// Randomize the bias.
 	rng.seed(ID);
@@ -318,5 +327,54 @@ void DynamicNeuron::saveConnectionsStatus(std::ofstream* file) {
 void DynamicNeuron::resetIDCounter() {
 
 	DynamicNeuron::idCounter = 0;
+
+}
+
+void DynamicNeuron::decrementID() {
+
+	ID--;
+
+}
+
+void DynamicNeuron::decrementConnections(unsigned int ID) {
+
+	for (int nc = 0; nc < ncs.size(); nc++) {
+
+		if (ncs.at(nc).prevNeuron->getID() > ID)
+			ncs.at(nc).prevNeuron--;
+
+	}
+
+}
+
+// Deletes the connection to a specific neuron if it exists.
+// Also updates the connection ID of neurons whose position changed during the removal.
+void DynamicNeuron::removeConnection(unsigned int neuronID) {
+
+	// Delete connection to specific neuron.
+	for (int nc = 0; nc < ncs.size(); nc++) {
+
+		if (ncs.at(nc).prevNeuron->getID() == neuronID)
+			ncs.erase(ncs.begin() + nc);
+
+	}
+
+	// Should not need to update numParents since the backprop is already over when this is called.
+
+}
+
+// Deletes any connections under a threshold.
+void DynamicNeuron::removeDeadConnections(float threshold) {
+
+	for (int nc = 0; nc < ncs.size(); nc++) {
+
+		if (abs(ncs.at(nc).weight) < threshold) {
+
+			std::cout << "removing connection with value of " << ncs.at(nc).weight << std::endl;
+			ncs.erase(ncs.begin() + nc);
+
+		}
+
+	}
 
 }
