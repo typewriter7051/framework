@@ -67,18 +67,15 @@ std::vector<DynamicNeuron*> DynamicNeuralNetwork::getArray(unsigned int start, u
 
 	std::vector<DynamicNeuron*> temp(end - start + 1);
 
-	for (int i = 0; i <= end - start; i++) {
-
+	for (int i = 0; i <= end - start; i++)
 		temp.at(i) = &neurons.at(start + i);
-
-	}
 
 	return temp;
 
 }
 
 // Runs the neural network and returns the outputs in a list.
-std::vector<float> DynamicNeuralNetwork::runNeuralNetwork(std::vector<float>* finputs) {
+std::vector<float> DynamicNeuralNetwork::runNeuralNetwork(std::vector<float>* finputs, int profile) {
 
 	if (finputs->size() != inputs.size()) {
 
@@ -87,29 +84,34 @@ std::vector<float> DynamicNeuralNetwork::runNeuralNetwork(std::vector<float>* fi
 
 	}
 
-	// Clear any metadata for all neurons.
-	resetNeurons();
+	if (profile < 0 || profile >= profiles.size()) {
+
+		std::cout << "WARNING: CALLED runNeuralNetwork() WITH OUT OF BOUNDS PROFILE\n";
+		return std::vector<float>(1);
+
+	}
+
+	// Set up the completion record.
+	std::vector<bool> cr(neurons.size(), false);
 
 	// Set up the input neurons.
-	setInputs(finputs);
+	for (int i = 0; i < inputs.size(); i++)
+		profiles.at(profile).at(i) = finputs->at(i);
 
 	// Vector to be returned.
 	std::vector<float> rv;
 
 	// Call getValue() for all output neurons and copy results to returnVector.
-	for (DynamicNeuron* n : outputs) {
-
-		rv.push_back(n->getValue());
-
-	}
+	for (DynamicNeuron* n : outputs)
+		rv.push_back(n->getValue(&profiles.at(profile), &cr));
 
 	return rv;
 
 }
 
-float DynamicNeuralNetwork::getCost(std::vector<float>* finputs, std::vector<float>* foutputs) {
+float DynamicNeuralNetwork::getCost(std::vector<float>* finputs, std::vector<float>* foutputs, int profile) {
 
-	std::vector<float> actualOutput = runNeuralNetwork(finputs);
+	std::vector<float> actualOutput = runNeuralNetwork(finputs, profile);
 
 	if (foutputs->size() != actualOutput.size()) {
 
@@ -121,14 +123,10 @@ float DynamicNeuralNetwork::getCost(std::vector<float>* finputs, std::vector<flo
 
 	// Calculate standard deviation from expected output (cost).
 	float sd = 0;
-	for (int i = 0; i < actualOutput.size(); i++) {
-
+	for (int i = 0; i < actualOutput.size(); i++)
 		sd += (actualOutput.at(i) - foutputs->at(i)) * (actualOutput.at(i) - foutputs->at(i));
 
-	}
-
 	sd = sqrt(sd) / float(actualOutput.size());
-
 	return sd;
 
 }
@@ -158,11 +156,9 @@ void DynamicNeuralNetwork::setNeurons(unsigned int numInputs, unsigned int numOu
 
 void DynamicNeuralNetwork::setupWeights(float min, float max) {
 
-	for (int n = 0; n < neurons.size(); n++) {
-
+	for (int n = 0; n < neurons.size(); n++)
 		neurons[n].setupAverageConnections(min, max);
 
-	}
 
 }
 
@@ -214,7 +210,7 @@ void DynamicNeuralNetwork::removeNeuron(unsigned int ID) {
 }
 
 // TODO
-void DynamicNeuralNetwork::trimDead(float threshold) {
+void DynamicNeuralNetwork::trimDead(float threshold, int profile) {
 
 	float neuronAvg = 0, ncAvg = 0;
 	std::vector<unsigned int> removedNeurons;
@@ -222,7 +218,7 @@ void DynamicNeuralNetwork::trimDead(float threshold) {
 	for (int n = 0; n < neurons.size(); n++) {
 
 		ncAvg += neurons.at(n).getAvgConnection() / float(neurons.size());
-		neuronAvg += abs(neurons.at(n).getValue()) / float(neurons.size());
+		neuronAvg += abs(profiles.at(profile).at(n)) / float(neurons.size());
 
 	}
 
@@ -232,65 +228,11 @@ void DynamicNeuralNetwork::trimDead(float threshold) {
 		neurons.at(n).removeDeadConnections(ncAvg * threshold);
 
 		// TODO: this only compares the neuron's current value to the threshold instead of its average value.
-		if (abs(neurons.at(n).getValue()) < neuronAvg * threshold && n >= is + os)
+		if (abs(profiles.at(profile).at(n)) < neuronAvg * threshold && n >= is + os)
 			//removedNeurons.push_back(n);
 			removeNeuron(n);
 
 	}
-
-
-
-	/*
-	// TODO reinstantiate the entire list of neurons.
-	std::vector<DynamicNeuron> newNeurons;
-	DynamicNeuron::resetIDCounter();
-	newNeurons.resize(neurons.size() - removedNeurons.size());
-	hn -= removedNeurons.size();
-	for (int n = 0; n < neurons.size(); n++) {
-
-		// Keep skipping until a non-removed neuron.
-		bool isRemoved = true;
-		while (isRemoved) {
-
-			isRemoved = false;
-			for (unsigned int i : removedNeurons) {
-				if (n == i) isRemoved = true;
-			}
-
-			if (isRemoved) n++;
-
-		}
-
-		// Copy over bias.
-		newNeurons.at(n).setBias(neurons.at(n).getBias());
-
-		for (DynamicNeuron::DynamicNeuralConnection nc : neurons.at(n).ncs) {
-
-			// Find if the connection points towards a removed neuron.
-			bool isARemovedNeuron = false;
-			for (unsigned int i : removedNeurons) {
-				if (nc.prevNeuron->getID() == i) isARemovedNeuron = true;
-			}
-
-			if (!isARemovedNeuron) {
-
-				// Decrement connected neuron based on how many neurons before it were removed.
-				int decrement = 0;
-				for (unsigned int i : removedNeurons) {
-					if (nc.prevNeuron->getID() > i) decrement++;
-				}
-
-				// Add connection and copy over weight.
-				newNeurons.at(n).addConnection(&newNeurons.at(nc.prevNeuron->getID() - decrement), nc.weight);
-
-			}
-
-		}
-
-	}
-
-	neurons = newNeurons;
-	*/
 
 }
 
@@ -301,27 +243,28 @@ void DynamicNeuralNetwork::growNeuron() {
 
 }
 
-void DynamicNeuralNetwork::resetNeurons() {
+void DynamicNeuralNetwork::refreshNumParents() {
 
-	for (int n = 0; n < neurons.size(); n++) {
+	for (int n = 0; n < neurons.size(); n++)
+		neurons.at(n).resetNumParents();
 
-		neurons[n].setUndone();
-		neurons[n].resetNumParents();
+	std::vector<bool> cr(neurons.size(), false);
 
-	}
+	for (DynamicNeuron* o : outputs)
+		o->incrementChildParents(&cr);
 
 }
 
-void DynamicNeuralNetwork::trainNeuralNetwork(std::vector<float> samples, float stepSize) {
+void DynamicNeuralNetwork::trainNeuralNetwork(std::vector<float>* samples, float stepSize, int profile) {
 
-	if (samples.size() % (inputs.size() + outputs.size()) != 0) {
+	if (samples->size() % (inputs.size() + outputs.size()) != 0) {
 
 		std::cout << "\nWARNING: In trainNeuralNetwork() size of list not valid!\n";
 		return;
 
 	}
 
-	unsigned int batchSize = samples.size() / float(is + os);
+	unsigned int batchSize = samples->size() / float(is + os);
 
 	/*
 	The derivative record is a 2D list where the first dimension is the neuron
@@ -356,6 +299,7 @@ void DynamicNeuralNetwork::trainNeuralNetwork(std::vector<float> samples, float 
 	std::vector<int> countRecord;
 	countRecord.resize(neurons.size());
 	std::vector<std::vector<float>> derivRecord = avgDerivRecord;
+	refreshNumParents();
 
 	for (int i = 0; i < batchSize; i++) {
 
@@ -365,22 +309,35 @@ void DynamicNeuralNetwork::trainNeuralNetwork(std::vector<float> samples, float 
 		int index = i * (is + os);
 
 		// Upper bound for std::vector<> constructor is exclusive so no need for -1 at the end.
-		std::vector<float> newInputs(samples.begin() + index, samples.begin() + index + is);
-		std::vector<float> newExpectedOutputs(samples.begin() + index + is, samples.begin() + index + is + os);
+		std::vector<float> newInputs(samples->begin() + index, samples->begin() + index + is);
+		std::vector<float> newExpectedOutputs(samples->begin() + index + is, samples->begin() + index + is + os);
 
-		float cost = getCost(&newInputs, &newExpectedOutputs);
+		//----------------------------------------------------------------------------
+		// Reset and initialize records for next sample.
+
+		float cost = getCost(&newInputs, &newExpectedOutputs, profile);
 
 		// Reset countRecord.
 		for (int i = 0; i < countRecord.size(); i++) countRecord.at(i) = 0;
 
+		// Reset derivRecord.
+		for (int i = 0; i < derivRecord.size(); i++)
+			std::fill(derivRecord.at(i).begin(), derivRecord.at(i).end(), 0);
+
+		// TODO: isolate this section into a function and multithread it.
+
 		//----------------------------------------------------------------------------
 		// Calculate derivatives.
+
+		// Create completionRecord for the current profile.
+		// We want all values to be true because we already ran getCost().
+		std::vector<bool> cr(neurons.size(), true);
 
 		for (int o = 0; o < os; o++) {
 
 			// Because calling getCost() already runs the neural network, we can simply retrieve
 			// the output values from the network for finding the residual.
-			float residual = outputs.at(o)->getValue() - newExpectedOutputs.at(o);
+			float residual = outputs.at(o)->getValue(&profiles.at(profile), &cr) - newExpectedOutputs.at(o);
 			float dCost = residual / (outputs.size() * cost);
 
 			// Manually initialize the derivative record for the output neuron.
@@ -388,11 +345,9 @@ void DynamicNeuralNetwork::trainNeuralNetwork(std::vector<float> samples, float 
 			// the neurons having parent connections (which outputs do not have).
 			derivRecord.at(is + o).at(0) = dCost;
 
-			outputs.at(o)->getDerivative(&countRecord, &derivRecord, dCost);
+			outputs.at(o)->getDerivative(&profiles.at(profile), &countRecord, &derivRecord, dCost);
 
 		}
-		
-		int derivativesDone = 0;
 
 		//----------------------------------------------------------------------------
 		// Once derivRecord is complete, add it to the average.
@@ -413,24 +368,6 @@ void DynamicNeuralNetwork::trainNeuralNetwork(std::vector<float> samples, float 
 	moveMembers(&avgDerivRecord, stepSize);
 
 	// TODO: Trim neurons if needed.
-
-}
-
-void DynamicNeuralNetwork::setInputs(std::vector<float>* i) {
-
-	if (i->size() != inputs.size()) {
-
-		std::cout << "\nWARNING: called function setInputs() with invalid vector size!\n";
-		return;
-
-	}
-
-	for (int n = 0; n < inputs.size(); n++) {
-
-		inputs.at(n)->setValue(i->at(n));
-		inputs.at(n)->setDone();
-
-	}
 
 }
 
@@ -469,7 +406,7 @@ void DynamicNeuralNetwork::loadFromFile(std::string fileName) {
 
 		// Read activation function.
 		ActivationFunction::NonLinearMethod af;
-		file.read((char*)&af, sizeof(uint8_t));
+		file.read((char*)&af, sizeof(int));
 		neurons.at(n).setActivationFunction(af);
 
 		// Read bias.
@@ -500,6 +437,8 @@ void DynamicNeuralNetwork::loadFromFile(std::string fileName) {
 
 void DynamicNeuralNetwork::saveToFile(std::string fileName) {
 
+	// TODO: make it clear the file if it already exists.
+
 	fileName += ".tnn";
 
 	std::ofstream file;
@@ -521,6 +460,27 @@ void DynamicNeuralNetwork::saveToFile(std::string fileName) {
 	}
 
 	file.close();
+
+}
+
+//================================================================================
+// Profiles.
+
+void DynamicNeuralNetwork::addProfile() {
+
+	profiles.push_back(std::vector<float>(neurons.size(), 0));
+
+}
+
+unsigned int DynamicNeuralNetwork::getNumProfiles() {
+
+	return profiles.size();
+
+}
+
+void DynamicNeuralNetwork::setNumProfiles(unsigned int n) {
+
+	profiles.resize(n);
 
 }
 

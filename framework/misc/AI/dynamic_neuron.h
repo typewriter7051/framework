@@ -2,40 +2,35 @@
 #include <memory>
 #include <fstream>
 #include <vector>
+#include <iostream>
 
 namespace AI {
+class NeuronPos {
+public:
 
-	class NeuronPos {
-	public:
+	float x, y;
 
-		float x, y;
+	void move(float a, float b) {
+		x += a;
+		y += b;
+	}
 
-		void move(float a, float b) {
-
-			x += a;
-			y += b;
-
-		}
-
-	};
-
+};
 }
 
 namespace ActivationFunction {
-
-	enum NonLinearMethod {
-		arcHyperTan,
-		ELU,
-		hyperTan,
-		identity,
-		mish,
-		ReLU,
-		step,
-		sigmoid,
-		softplus,
-		swish
-	};
-
+enum NonLinearMethod {
+	arcHyperTan,
+	ELU,
+	hyperTan,
+	identity,
+	mish,
+	ReLU,
+	step,
+	sigmoid,
+	softplus,
+	swish
+};
 }
 
 class DynamicNeuron {
@@ -59,15 +54,11 @@ public:
     float getBias();
 	void setBias(float b);
 
-	float getValue();
-	void setValue(float f);
-
-	void setUndone();
-	void setDone();
+	float getValue(std::vector<float>* profile, std::vector<bool>* completionRecord);
 
 	float getAvgConnection();
 
-	void getDerivative(std::vector<int>* countRecord, std::vector<std::vector<float>>* derivRecord, float dcost);
+	void getDerivative(std::vector<float>* profile, std::vector<int>* countRecord, std::vector<std::vector<float>>* derivRecord, float dcost);
 
 	void moveMembers(std::vector<float>* values, float strength);
 
@@ -86,15 +77,21 @@ public:
 		float weight;
 		bool isRecursive;
 
-		DynamicNeuralConnection() {}
-		DynamicNeuralConnection(DynamicNeuron* n) { prevNeuron = n; }
-		DynamicNeuralConnection(DynamicNeuron* n, float w) { prevNeuron = n; weight = w; }
+		DynamicNeuralConnection() { isRecursive = false; }
+		DynamicNeuralConnection(DynamicNeuron* n) { prevNeuron = n; isRecursive = false; }
+		DynamicNeuralConnection(DynamicNeuron* n, float w) { prevNeuron = n; weight = w; isRecursive = false; }
 		//~NeuralConnection() { delete prevNeuron; prevNeuron = NULL; }
 
-		float retrieveValue(bool incrementParent) {
+		float retrieveValue(std::vector<float>* profile, std::vector<bool>* completionRecord) {
 
-			if (!isRecursive && incrementParent) prevNeuron->numParents++;
-			return prevNeuron->getValue() * weight;
+			return prevNeuron->getValue(profile, completionRecord) * weight;
+
+		}
+
+		void incrementChildParent(std::vector<bool>* completionRecord) {
+
+			if (!isRecursive) prevNeuron->numParents++;
+			prevNeuron->incrementChildParents(completionRecord);
 
 		}
 
@@ -103,8 +100,9 @@ public:
 	//--------------------------------------------------------------------------------
 	// numParents
 
+	void incrementChildParents(std::vector<bool>* completionRecord);
+
 	unsigned int numParents; // Number of parent neuron connections in the network.
-	void incrementParent();
 	void resetNumParents();
 
     //--------------------------------------------------------------------------------
@@ -126,17 +124,13 @@ public:
 
 private:
 
-	float getAVDerivative();
-	void applyNonlinear();
+	float getAVDerivative(std::vector<float>* profile);
+	void applyNonlinear(std::vector<float>* profile);
 
-	bool finished;
 	static unsigned int idCounter;
 	unsigned int ID;
-	float av;
 	float bias;
 	ActivationFunction::NonLinearMethod af;
 	AI::NeuronPos pos;
-
-
 
 };

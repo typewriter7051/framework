@@ -16,8 +16,6 @@ DynamicNeuron::DynamicNeuron() {
 	ID = idCounter;
 	idCounter++;
 
-	av = 0;
-	finished = false;
 	bias = 0;
 	af = identity;
 	numParents = 0;
@@ -31,49 +29,32 @@ DynamicNeuron::DynamicNeuron() {
 //================================================================================
 // Getters & setters.
 
-float DynamicNeuron::getValue() {
+float DynamicNeuron::getValue(std::vector<float>* profile, std::vector<bool>* completionRecord) {
 
-	if (finished)
-		return av;
+	// If the neuron is already finished.
+	if (completionRecord->at(ID))
+		return profile->at(ID);
 
 	float temp = 0;
 
 	// Mark the node as "done" in case future nodes wish to retrieve its value.
 	// It's important to keep this before the for loop to avoid infinite recursion.
-	finished = true;
+	completionRecord->at(ID) = true;
 
 	for (int nc = 0; nc < ncs.size(); nc++) {
 
 		// Weight multiplication is already done in retrieveValue().
-		temp += ncs[nc].retrieveValue(true);
+		temp += ncs[nc].retrieveValue(profile, completionRecord);
 
 	}
 
 	// Add bias and apply nonlinear transform.
-	av = temp + bias;
-	applyNonlinear();
+	profile->at(ID) = temp + bias;
+	applyNonlinear(profile);
 
 	// The neuron's activation value is updated regardless, but
 	// the old value is returned if `recurse` is set to false.
-	return av;
-
-}
-
-void DynamicNeuron::setValue(float v) {
-
-	av = v;
-
-}
-
-void DynamicNeuron::setUndone() {
-
-	finished = false;
-
-}
-
-void DynamicNeuron::setDone() {
-
-	finished = true;
+	return profile->at(ID);
 
 }
 
@@ -126,7 +107,7 @@ float DynamicNeuron::getAvgConnection() {
 
 }
 
-void DynamicNeuron::getDerivative(std::vector<int>* countRecord, std::vector<std::vector<float>>* derivRecord, float dcost_) {
+void DynamicNeuron::getDerivative(std::vector<float>* profile, std::vector<int>* countRecord, std::vector<std::vector<float>>* derivRecord, float dcost_) {
 
 	/*
 	* The derivative of the cost with respect to this neuron's activation value
@@ -136,7 +117,7 @@ void DynamicNeuron::getDerivative(std::vector<int>* countRecord, std::vector<std
 	*/
 
 	// Cost derivative with respect to neuron activation before activation function.
-	float preAFDeriv = dcost_ * getAVDerivative();
+	float preAFDeriv = dcost_ * getAVDerivative(profile);
 
 	// DO NOT shorten to if else, the double if is required for the edge case that
 	// countRecord is exactly 1 below completion.
@@ -156,12 +137,12 @@ void DynamicNeuron::getDerivative(std::vector<int>* countRecord, std::vector<std
 		for (int nc = 0; nc < ncs.size(); nc++) {
 
 			// Derivative of cost w/ respect to connection = child neuron value * dervative of cost w/ respect to parent neuron.
-			derivRecord->at(this->ID).at(nc + 1) = ncs.at(nc).retrieveValue(false) * derivRecord->at(this->ID).at(0);
+			derivRecord->at(this->ID).at(nc + 1) = profile->at(ncs.at(nc).prevNeuron->getID()) * derivRecord->at(this->ID).at(0);
 
 			// Derivative of cost w/ respect to child av (after activation function).
 			float childDerivative = derivRecord->at(this->ID).at(0) * ncs.at(nc).weight;
 
-			ncs.at(nc).prevNeuron->getDerivative(countRecord, derivRecord, childDerivative);
+			ncs.at(nc).prevNeuron->getDerivative(profile, countRecord, derivRecord, childDerivative);
 
 		}
 
@@ -169,9 +150,10 @@ void DynamicNeuron::getDerivative(std::vector<int>* countRecord, std::vector<std
 
 }
 
-float DynamicNeuron::getAVDerivative() {
+float DynamicNeuron::getAVDerivative(std::vector<float>* profile) {
 
 	float a, b, c;
+	float av = profile->at(ID);
 
 	switch (af) {
 
@@ -203,7 +185,9 @@ float DynamicNeuron::getAVDerivative() {
 
 }
 
-void DynamicNeuron::applyNonlinear() {
+void DynamicNeuron::applyNonlinear(std::vector<float>* profile) {
+
+	float av = profile->at(ID);
 
 	switch (af) {
 
@@ -268,9 +252,20 @@ void DynamicNeuron::setActivationFunction(ActivationFunction::NonLinearMethod me
 //================================================================================
 // numParents
 
-void DynamicNeuron::incrementParent() {
+void DynamicNeuron::incrementChildParents(std::vector<bool>* completionRecord) {
 
-	numParents++;
+	if (completionRecord->at(ID)) return;
+
+	// Mark the node as "done" in case future nodes wish to retrieve its value.
+	// It's important to keep this before the for loop to avoid infinite recursion.
+	completionRecord->at(ID) = true;
+
+	for (int nc = 0; nc < ncs.size(); nc++) {
+
+		// Weight multiplication is already done in retrieveValue().
+		ncs[nc].incrementChildParent(completionRecord);
+
+	}
 
 }
 
@@ -301,7 +296,7 @@ connections and thus the length is known beforehand.
 void DynamicNeuron::saveConnectionsStatus(std::ofstream* file) {
 
 	// Write activation function.
-	file->write((char*) &af, sizeof(uint8_t));
+	file->write((char*) &af, sizeof(int));
 
 	// Write bias.
 	file->write((char*) &bias, sizeof(float));
