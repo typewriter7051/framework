@@ -13,7 +13,7 @@ public:
 
 		value = v;
 		name = n;
-
+		
 	}
 
 	double getValue() { return value; }

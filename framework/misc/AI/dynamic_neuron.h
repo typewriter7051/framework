@@ -82,15 +82,10 @@ public:
 		DynamicNeuralConnection(DynamicNeuron* n, float w) { prevNeuron = n; weight = w; isRecursive = false; }
 		//~NeuralConnection() { delete prevNeuron; prevNeuron = NULL; }
 
-		float retrieveValue(std::vector<float>* profile, std::vector<bool>* completionRecord) {
-
-			return prevNeuron->getValue(profile, completionRecord) * weight;
-
-		}
-
 		void incrementChildParent(std::vector<bool>* completionRecord) {
 
-			if (!isRecursive) prevNeuron->numParents++;
+			prevNeuron->numParents += !isRecursive; // Branchless version.
+			//if (!isRecursive) prevNeuron->numParents++;
 			prevNeuron->incrementChildParents(completionRecord);
 
 		}

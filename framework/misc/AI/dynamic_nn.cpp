@@ -99,11 +99,11 @@ std::vector<float> DynamicNeuralNetwork::runNeuralNetwork(std::vector<float>* fi
 		profiles.at(profile).at(i) = finputs->at(i);
 
 	// Vector to be returned.
-	std::vector<float> rv;
+	std::vector<float> rv(outputs.size());
 
 	// Call getValue() for all output neurons and copy results to returnVector.
-	for (DynamicNeuron* n : outputs)
-		rv.push_back(n->getValue(&profiles.at(profile), &cr));
+	for (int n = 0; n < outputs.size(); n++)
+		rv[n] = outputs[n]->getValue(&profiles.at(profile), &cr);
 
 	return rv;
 
@@ -202,7 +202,7 @@ void DynamicNeuralNetwork::removeNeuron(unsigned int ID) {
 	for (int n = ID + 1; n < neurons.size(); n++)
 		neurons.at(n).decrementID();
 
-	std::cout << "Erasing neuron " << ID << std::endl;
+	//std::cout << "Erasing neuron " << ID << std::endl;
 
 	// Finally erase the neuron object from the list.
 	neurons.erase(neurons.begin() + ID);
@@ -264,8 +264,6 @@ void DynamicNeuralNetwork::trainNeuralNetwork(std::vector<float>* samples, float
 
 	}
 
-	unsigned int batchSize = samples->size() / float(is + os);
-
 	/*
 	The derivative record is a 2D list where the first dimension is the neuron
 	and the 2nd dimension is the bias + weights.
@@ -284,15 +282,16 @@ void DynamicNeuralNetwork::trainNeuralNetwork(std::vector<float>* samples, float
 
 	Example: bias of neuron 2 would be derivRecord[1][0].
 	*/
-	std::vector<std::vector<float>> avgDerivRecord;
+
+	std::vector<std::vector<float>> avgDerivRecord(neurons.size());
+	unsigned int batchSize = samples->size() / float(is + os);
 	float numParams = 0;
 
 	for (int n = 0; n < neurons.size(); n++) { // For all neurons.
 
-		std::vector<float> temp;
-		temp.resize(neurons.at(n).getNumConnections() + 1); // The +1 is for including the bias.
-		numParams += neurons.at(n).getNumConnections() + 1;
-		avgDerivRecord.push_back(temp);
+		// The +1 is for including the bias.
+		avgDerivRecord[n].resize(neurons[n].getNumConnections() + 1);
+		numParams += neurons[n].getNumConnections() + 1;
 
 	}
 
@@ -318,13 +317,11 @@ void DynamicNeuralNetwork::trainNeuralNetwork(std::vector<float>* samples, float
 		float cost = getCost(&newInputs, &newExpectedOutputs, profile);
 
 		// Reset countRecord.
-		for (int i = 0; i < countRecord.size(); i++) countRecord.at(i) = 0;
+		std::fill(countRecord.begin(), countRecord.end(), 0);
 
 		// Reset derivRecord.
 		for (int i = 0; i < derivRecord.size(); i++)
 			std::fill(derivRecord.at(i).begin(), derivRecord.at(i).end(), 0);
-
-		// TODO: isolate this section into a function and multithread it.
 
 		//----------------------------------------------------------------------------
 		// Calculate derivatives.
@@ -360,14 +357,10 @@ void DynamicNeuralNetwork::trainNeuralNetwork(std::vector<float>* samples, float
 			}
 		}
 
-		int avgDone = 0;
-
 	}
 
 	// Update the weights/bias.
 	moveMembers(&avgDerivRecord, stepSize);
-
-	// TODO: Trim neurons if needed.
 
 }
 

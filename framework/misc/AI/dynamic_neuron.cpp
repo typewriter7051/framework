@@ -31,20 +31,20 @@ DynamicNeuron::DynamicNeuron() {
 
 float DynamicNeuron::getValue(std::vector<float>* profile, std::vector<bool>* completionRecord) {
 
-	// If the neuron is already finished.
-	if (completionRecord->at(ID))
-		return profile->at(ID);
-
-	float temp = 0;
-
 	// Mark the node as "done" in case future nodes wish to retrieve its value.
 	// It's important to keep this before the for loop to avoid infinite recursion.
 	completionRecord->at(ID) = true;
+	float temp = 0;
 
-	for (int nc = 0; nc < ncs.size(); nc++) {
+	for (DynamicNeuron::DynamicNeuralConnection nc : ncs) {
 
-		// Weight multiplication is already done in retrieveValue().
-		temp += ncs[nc].retrieveValue(profile, completionRecord);
+		int ID = nc.prevNeuron->getID();
+		bool isComplete = completionRecord->at(ID);
+
+		if (isComplete)
+			temp += profile->at(ID) * nc.weight;
+		else
+			temp += nc.prevNeuron->getValue(profile, completionRecord) * nc.weight;
 
 	}
 
@@ -52,8 +52,6 @@ float DynamicNeuron::getValue(std::vector<float>* profile, std::vector<bool>* co
 	profile->at(ID) = temp + bias;
 	applyNonlinear(profile);
 
-	// The neuron's activation value is updated regardless, but
-	// the old value is returned if `recurse` is set to false.
 	return profile->at(ID);
 
 }
@@ -254,11 +252,11 @@ void DynamicNeuron::setActivationFunction(ActivationFunction::NonLinearMethod me
 
 void DynamicNeuron::incrementChildParents(std::vector<bool>* completionRecord) {
 
-	if (completionRecord->at(ID)) return;
+	if ((*completionRecord)[ID]) return;
 
 	// Mark the node as "done" in case future nodes wish to retrieve its value.
 	// It's important to keep this before the for loop to avoid infinite recursion.
-	completionRecord->at(ID) = true;
+	(*completionRecord)[ID] = true;
 
 	for (int nc = 0; nc < ncs.size(); nc++) {
 
@@ -365,7 +363,7 @@ void DynamicNeuron::removeDeadConnections(float threshold) {
 
 		if (abs(ncs.at(nc).weight) < threshold) {
 
-			std::cout << "removing connection with value of " << ncs.at(nc).weight << std::endl;
+			//std::cout << "removing connection with value of " << ncs.at(nc).weight << std::endl;
 			ncs.erase(ncs.begin() + nc);
 
 		}

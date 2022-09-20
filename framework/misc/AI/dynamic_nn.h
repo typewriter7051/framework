@@ -39,6 +39,7 @@ public:
 	// Training.
 
 	void refreshNumParents();
+
 	void trainNeuralNetwork(std::vector<float>* samples, float stepSize, int profile);
 	//Neuron* getNeuron(unsigned int index);
 
