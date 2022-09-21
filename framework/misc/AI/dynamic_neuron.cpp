@@ -38,13 +38,13 @@ float DynamicNeuron::getValue(std::vector<float>* profile, std::vector<bool>* co
 
 	for (DynamicNeuron::DynamicNeuralConnection nc : ncs) {
 
-		int ID = nc.prevNeuron->getID();
-		bool isComplete = completionRecord->at(ID);
+		int prevID = nc.prevNeuron->getID();
+		bool isComplete = completionRecord->at(prevID);
 
-		if (isComplete)
-			temp += profile->at(ID) * nc.weight;
-		else
-			temp += nc.prevNeuron->getValue(profile, completionRecord) * nc.weight;
+		if (!isComplete)
+			nc.prevNeuron->getValue(profile, completionRecord);
+
+		temp += profile->at(prevID) * nc.weight;
 
 	}
 

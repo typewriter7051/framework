@@ -1,6 +1,7 @@
 #include "dynamic_nn.h"
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 
 //================================================================================
 // Constructors.
@@ -349,12 +350,26 @@ void DynamicNeuralNetwork::trainNeuralNetwork(std::vector<float>* samples, float
 		//----------------------------------------------------------------------------
 		// Once derivRecord is complete, add it to the average.
 
+		float scalingConst = 1 / (float(batchSize)); //* numParams);
 		for (int n = 0; n < neurons.size(); n++) {
-			for (int nc = 0; nc < neurons.at(n).getNumConnections() + 1; nc++) {
 
-				avgDerivRecord.at(n).at(nc) -= derivRecord.at(n).at(nc) / (float(batchSize) * numParams);
+			// Original.
+			/*
+			for (int nc = 0; nc < neurons.at(n).getNumConnections() + 1; nc++)
+				avgDerivRecord.at(n).at(nc) -= derivRecord.at(n).at(nc) * scalingConst;
+			*/
 
-			}
+			// Using std::transform() is faster.
+			std::transform(
+				derivRecord[i].begin(), derivRecord[i].end(),
+				derivRecord[i].begin(), [scalingConst](float& c) { return c * scalingConst; }
+			);
+
+			std::transform(
+				derivRecord[i].begin(), derivRecord[i].end(),
+				avgDerivRecord[i].begin(), avgDerivRecord[i].begin(), std::minus<float>()
+			);
+
 		}
 
 	}
@@ -492,6 +507,7 @@ void DynamicNeuralNetwork::moveMembers(std::vector<std::vector<float>>* values, 
 
 	for (int n = 0; n < neurons.size(); n++) {
 
+		///*
 		// Check the size of each secondary list.
 		if (values->at(n).size() != neurons.at(n).getNumConnections() + 1) {
 
@@ -499,6 +515,7 @@ void DynamicNeuralNetwork::moveMembers(std::vector<std::vector<float>>* values, 
 			return;
 
 		}
+		//*/
 
 		neurons[n].moveMembers(&values->at(n), strength);
 
