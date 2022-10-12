@@ -55,18 +55,11 @@ public:
     float getBias();
 	void setBias(float b);
 
-	float getValue(
-		std::vector<float>* profile,
-		std::vector<float>* oldProfile,
-		std::vector<bool>* completionRecord);
+	float getValue( std::vector<float>* profile, std::vector<float>* oldProfile, std::vector<bool>* completionRecord);
 
 	float getAvgConnection();
 
-	void getDerivative(
-		std::vector<float>* profile,
-		std::vector<int>* countRecord,
-		std::vector<std::vector<float>>* derivRecord,
-		float dcost);
+	void getDerivative( std::vector<float>* profile, std::vector<int>* countRecord, std::vector<std::vector<float>>* derivRecord, float dcost);
 
 	void moveMembers(std::vector<float>* values, float strength);
 

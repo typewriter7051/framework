@@ -63,10 +63,10 @@ public:
 	//--------------------------------------------------------------------------------
 	// File handling.
 
-	void saveToFile(std::string fileName);
+	void saveToFile(std::string fileName, bool compressIDs, bool useHalfFloats);
 	void loadFromFile(std::string fileName);
 
-	//void bakeToStaticFile(std::string fileName, bool IDComp, );
+	void bakeToStaticFile(std::string fileName, bool useSIMD);
 private:
 
 	// Pointers to the input and output neurons within the previous list.

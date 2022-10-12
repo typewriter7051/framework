@@ -23,7 +23,6 @@ std::vector<DynamicNeuron*> DynamicNeuralNetwork::getOutputs() {
 
 std::vector<DynamicNeuron*> DynamicNeuralNetwork::getNeurons() {
 	std::vector<DynamicNeuron*> n;
-
 	for (DynamicNeuron tn : neurons)
 		n.push_back(&tn);
 
@@ -142,7 +141,7 @@ void DynamicNeuralNetwork::connectNeurons(int indexB, int indexA, bool isRecursi
 	neurons[indexB].addConnection(&neurons[indexA]);
 }
 
-void DynamicNeuralNetwork::setActivationFunction( std::vector<DynamicNeuron*> neurons, ActivationFunction::NonLinearMethod method) {
+void DynamicNeuralNetwork::setActivationFunction(std::vector<DynamicNeuron*> neurons, ActivationFunction::NonLinearMethod method) {
 	for (DynamicNeuron* n : neurons)
 		n->setActivationFunction(method);
 }
@@ -293,14 +292,13 @@ void DynamicNeuralNetwork::trainNeuralNetwork( std::vector<float>* samples, floa
 		// Once derivRecord is complete, add it to the average.
 
 		float scalingConst = 1 / float(batchSize * numParams);
-		for (int n = 0; n < neurons.size(); n++) {
-			// Original.
-			///*
-			for (int nc = 0; nc < neurons.at(n).getNumConnections() + 1; nc++)
+		int size = neurons.size();
+		for (int n = 0; n < size; n++) {
+			int numMembers = neurons.at(n).getNumConnections() + 1;
+			for (int nc = 0; nc < numMembers; nc++)
 				avgDerivRecord.at(n).at(nc) -= derivRecord.at(n).at(nc) * scalingConst;
-			//*/
 
-			// Using std::transform() is faster but it crashes a lot.
+			// Using std::transform() is faster but it crashes a lot and idk why.
 			/*
 			std::transform(
 				derivRecord[i].begin(), derivRecord[i].end(),
@@ -339,6 +337,13 @@ void DynamicNeuralNetwork::loadFromFile(std::string fileName) {
 	std::ifstream file;
 	file.open(fileName, std::ios::binary);
 
+	// Read compression info.
+	uint8_t intSize;
+	bool useHalfFloats;
+	file.read((char*) &intSize, sizeof(char));
+	file.read((char*) &useHalfFloats, sizeof(char));
+	// TODO: make the file actually work with half floats and ints.
+
 	// Read network info.
 	unsigned int is, os, hn;
 	file.read((char*) &is, sizeof(unsigned int));
@@ -374,12 +379,19 @@ void DynamicNeuralNetwork::loadFromFile(std::string fileName) {
 	}
 }
 
-void DynamicNeuralNetwork::saveToFile(std::string fileName) {
+void DynamicNeuralNetwork::saveToFile(std::string fileName, bool compressIDs, bool useHalfFloats) {
 	// TODO: make it clear the file if it already exists.
 
 	fileName += ".tnn";
 	std::ofstream file;
 	file.open(fileName, std::ios::out | std::ios::binary);
+
+	if (compressIDs) {
+		// Calculate the smallest byte size the network can fit in (either 1, 2, or 4 byte int).
+		uint8_t intSize;
+		file.write((char*)& intSize, sizeof(char));
+	}
+	file.write((char*)&useHalfFloats, sizeof(bool));
 
 	unsigned int is, os, hn;
 	is = inputs.size();
@@ -390,6 +402,7 @@ void DynamicNeuralNetwork::saveToFile(std::string fileName) {
 	file.write((char*)&os, sizeof(int));
 	file.write((char*)&hn, sizeof(int));
 
+	// TODO: make neurons take half floats and compressed ID's
 	for (DynamicNeuron n : neurons)
 		n.saveConnectionsStatus(&file);
 

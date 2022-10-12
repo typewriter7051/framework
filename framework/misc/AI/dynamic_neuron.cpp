@@ -159,7 +159,6 @@ float DynamicNeuron::getAVDerivative(std::vector<float>* profile) {
 
 void DynamicNeuron::applyNonlinear(std::vector<float>* profile) {
 	float av = profile->at(ID);
-
 	switch (af) {
 	case arcHyperTan:
 		av = atanh(av);
