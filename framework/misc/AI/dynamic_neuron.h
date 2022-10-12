@@ -47,6 +47,7 @@ public:
     unsigned int getNumConnections();
 
 	void addConnection(DynamicNeuron* n);
+	void addConnection(DynamicNeuron* n, bool isRecursive);
 	void addConnection(DynamicNeuron* n, float w);
 
 	unsigned int getID();
@@ -54,11 +55,18 @@ public:
     float getBias();
 	void setBias(float b);
 
-	float getValue(std::vector<float>* profile, std::vector<bool>* completionRecord);
+	float getValue(
+		std::vector<float>* profile,
+		std::vector<float>* oldProfile,
+		std::vector<bool>* completionRecord);
 
 	float getAvgConnection();
 
-	void getDerivative(std::vector<float>* profile, std::vector<int>* countRecord, std::vector<std::vector<float>>* derivRecord, float dcost);
+	void getDerivative(
+		std::vector<float>* profile,
+		std::vector<int>* countRecord,
+		std::vector<std::vector<float>>* derivRecord,
+		float dcost);
 
 	void moveMembers(std::vector<float>* values, float strength);
 
@@ -79,6 +87,7 @@ public:
 
 		DynamicNeuralConnection() { isRecursive = false; }
 		DynamicNeuralConnection(DynamicNeuron* n) { prevNeuron = n; isRecursive = false; }
+		DynamicNeuralConnection(DynamicNeuron* n, bool r) { prevNeuron = n; isRecursive = r; }
 		DynamicNeuralConnection(DynamicNeuron* n, float w) { prevNeuron = n; weight = w; isRecursive = false; }
 		//~NeuralConnection() { delete prevNeuron; prevNeuron = NULL; }
 

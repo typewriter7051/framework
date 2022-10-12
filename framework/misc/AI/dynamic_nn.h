@@ -9,7 +9,6 @@ public:
 	//Constructors.
 
 	DynamicNeuralNetwork();
-
 	//--------------------------------------------------------------------------------
 	// Getters.
 
@@ -27,14 +26,12 @@ public:
 	// Runs the neural network and returns the outputs in a list.
 	std::vector<float> runNeuralNetwork(std::vector<float>* finputs, int profile);
 	float getCost(std::vector<float>* finputs, std::vector<float>* foutputs, int profile);
-
 	//--------------------------------------------------------------------------------
 	// Profiles.
 
 	void addProfile();
 	unsigned int getNumProfiles();
 	void setNumProfiles(unsigned int n);
-
 	//--------------------------------------------------------------------------------
 	// Training.
 
@@ -42,7 +39,6 @@ public:
 
 	void trainNeuralNetwork(std::vector<float>* samples, float stepSize, int profile);
 	//Neuron* getNeuron(unsigned int index);
-
 	//--------------------------------------------------------------------------------
 	// Network wrangling.
 
@@ -50,15 +46,20 @@ public:
 	// Randomizes the weights.
 	void setupWeights(float min, float max);
 	// Fully connects the 2 lists of neurons (B is ending layer, A is starting layer).
-	void fullyConnectNeurons(std::vector<DynamicNeuron*> layerB, std::vector<DynamicNeuron*> layerA);
-	void setActivationFunction(std::vector<DynamicNeuron*> neurons, ActivationFunction::NonLinearMethod method);
+	void fullyConnectNeurons(
+		std::vector<DynamicNeuron*> layerB,
+		std::vector<DynamicNeuron*> layerA);
+	void connectNeurons(int indexB, int indexA, bool isRecursive);
+	void setActivationFunction(
+		std::vector<DynamicNeuron*> neurons,
+		ActivationFunction::NonLinearMethod method);
+
 	void removeNeuron(unsigned int ID);
 	// Removes any neurons or connections below (average value across network) * threshold.
 	void trimDead(float threshold, int profile);
 	// NOTE: liquid neural networks require numerical differentiation
 	// since we have no idea which connections are recursive.
 	void growNeuron();
-
 	//--------------------------------------------------------------------------------
 	// File handling.
 
@@ -66,7 +67,6 @@ public:
 	void loadFromFile(std::string fileName);
 
 	//void bakeToStaticFile(std::string fileName, bool IDComp, );
-
 private:
 
 	// Pointers to the input and output neurons within the previous list.
@@ -81,5 +81,4 @@ private:
 	unsigned int is, os, hn;
 
 	void moveMembers(std::vector<std::vector<float>>* values, float strength);
-
 };

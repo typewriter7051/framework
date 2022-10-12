@@ -5,3 +5,5 @@ DynamicNeuralNetwork* createConvolutionalNetwork(int inputs, int outputs, int hi
 
 // look up technical term later.
 DynamicNeuralNetwork* createUnevenNetwork(std::vector<int> sizes);
+
+DynamicNeuralNetwork* createWavenet(int bufferSize, int hiddenLayers);
