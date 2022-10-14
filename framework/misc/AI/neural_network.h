@@ -5,7 +5,7 @@
 class NeuralNetwork {
 public:
     std::vector<float> runNeuralNetwork();
-    float getCost();
+    float getCost(std::vector<float> expectedOutputs);
 
     void saveToFile(std::string fileName);
     void loadFromFile(std::string fileName);
