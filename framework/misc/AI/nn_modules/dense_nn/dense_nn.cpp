@@ -1,4 +1,5 @@
 #include "dense_nn.h"
+//==============================================================================
 
 DenseNeuralNetwork::DenseNeuralNetwork(std::vector<int> sizes) {
     neurons = std::vector<std::vector<float>>(sizes.size());
@@ -12,4 +13,28 @@ DenseNeuralNetwork::DenseNeuralNetwork(std::vector<int> sizes) {
     for (int i = 0; i < sizes.size() - 1; i++) {
         weights[i].resize(sizes[i] * sizes[i + 1]);
     }
+}
+//==============================================================================
+
+void DenseNeuralNetwork::trainModule(std::vector<float>* derivs) {
+
+}
+//==============================================================================
+
+void DenseNeuralNetwork::saveToFile(std::ofstream* file) {
+
+}
+
+void DenseNeuralNetwork::readFromFile(std::ifstream* file) {
+
+}
+//==============================================================================
+
+void DenseNeuralNetwork::process() {
+
+}
+//==============================================================================
+
+void DenseNeuralNetwork::reset() {
+    
 }
