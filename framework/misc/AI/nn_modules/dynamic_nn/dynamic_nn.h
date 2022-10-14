@@ -3,10 +3,10 @@
 #include <vector>
 #include <string>
 
-class DynamicNeuralNetwork {
+class DynamicNeuralNetwork : public NNModule {
 public:
 	//--------------------------------------------------------------------------------
-	//Constructors.
+	// Constructors.
 
 	DynamicNeuralNetwork();
 	//--------------------------------------------------------------------------------
@@ -65,16 +65,13 @@ public:
 
 	void saveToFile(std::string fileName, bool compressIDs, bool useHalfFloats);
 	void loadFromFile(std::string fileName);
-
-	void bakeToStaticFile(std::string fileName, bool useSIMD);
+	
 private:
-
 	// Pointers to the input and output neurons within the previous list.
 	std::vector<DynamicNeuron*> inputs, outputs;
 	std::vector<DynamicNeuron> neurons;
 	// Stores different profiles so you don't need to create a copy of the network for multiple tasks.
 	std::vector<std::vector<float>> profiles;
-
 	//--------------------------------------------------------------------------------
 	// Training.
 
