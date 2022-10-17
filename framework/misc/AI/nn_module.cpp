@@ -44,7 +44,7 @@ void NNModule::trainModule(std::vector<float>* derivs) {
         outputDerivs += f;
     // If all dependencies are solved then pass to train() and train child modules.
     if (lastCall()) {
-        train(derivs);
+        train(&outputDerivs);
 
         for (NNModule* cm : childModules)
             cm->trainModule(&inputDerivs);
