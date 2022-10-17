@@ -14,7 +14,7 @@ int NNModule::getNumOutputs() {
 }
 //==============================================================================
 
-void setIOPtrs(std::vector<float>* i, std::vector<float>* o) {
+void NNModule::setIOPtrs(std::vector<float>* i, std::vector<float>* o) {
     inputs = i;
     outputs = o;
 

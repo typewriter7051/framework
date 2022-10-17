@@ -1,9 +1,9 @@
 #include "../../nn_module.h"
 
-class DenseNeuralNetwork : public NNModule {
+class TestModule : public NNModule {
 public:
-    DenseNeuralNetwork() {}
-    DenseNeuralNetwork(std::vector<int> sizes);
+    TestModule() {}
+    TestModule(std::vector<int> sizes);
 
     // derivs is a list containing the derivative of the cost function to each output neuron.
     void trainModule(std::vector<float>* derivs) override;
@@ -13,14 +13,8 @@ public:
 
 private:
     // This is where the actual processing is done.
-    void process(std::vector<float>* inputs, std::vector<float>* outputs) override;
+    void process() override;
     // Gets called at the beginning of every sample.
     // Use this to prepare your module for processing the next sample.
     void reset() override;
-
-    // Outer dimension is layer index.
-    // neurons[layer] = matrixMultiply(neurons[layer - 1], weights[layer]) + biases[layer]
-    std::vector<std::vector<float>> neurons;
-    std::vector<std::vector<float>> biases;
-    std::vector<std::vector<float>> weights;
 };

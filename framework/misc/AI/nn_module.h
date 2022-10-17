@@ -24,18 +24,15 @@ public:
 protected:
     // Checks if the CPU supports SSE.
     bool SSEsupport();
-    // Returns true if this is the first or last time this module is called.
-    bool firstCall();
-    bool lastCall();
     // This is where the actual processing is done. Draw input values from the inputs vector
     // then store the result in the outputs vector. 
-    virtual void process(std::vector<float>* inputs, std::vector<float>* outputs);
+    virtual void process(const std::vector<float>* inputs, std::vector<float>* outputs);
     // Gets called at the beginning of every sample.
     // Use this to prepare your module for processing the next sample.
     virtual void reset();
     // Take the output derivatives, then preform back-propogation and pass the 
     // derivative with respect to the input neurons (before activation function) to the i vector.
-    virtual void train(std::vector<float>* derivs, std::vector<float>* i);
+    virtual void train(const std::vector<float>* derivs, std::vector<float>* i);
     // Comes with a collection of predefined SIMD-ized activation functions.
     void SIMDActivationFunction(activationfunction_enum);
 
@@ -47,4 +44,7 @@ private:
     int timesCalled;
     // How many times the module (should be) called when the entire neural network runs once.
     int numParents;
+    // Returns true if this is the first or last time this module is called.
+    bool firstCall();
+    bool lastCall();
 };
