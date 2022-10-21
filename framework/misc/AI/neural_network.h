@@ -5,16 +5,18 @@
 
 class NeuralNetwork {
 public:
-    void runNeuralNetwork(const std::vector<float>* inputs, std::vector<float>* outputs);
+    std::vector<float>* runNeuralNetwork(const std::vector<float>* inputs);
     float getCost(const std::vector<float>* expectedOutputs);
-
-    void setNumModules(int n);
+    void trainNeuralNetwork(std::vector<float>* inputs, std::vector<float>* expectedOutputs);
 
     void saveToFile(std::string fileName);
     void loadFromFile(std::string fileName);
 
+protected:
+    void initialize(std::vector<NNModule*> modules);
+
 private:
-    std::vector<std::unique_ptr<NNModule>> modules;
-    // Holds the output/input neurons to pass between modules.
-    std::vector<float> profile;
+    // Order of modules run first to last.
+    // For backprop this vector can simply be reversed.
+    std::vector<NNModule*> moduleOrder;
 };

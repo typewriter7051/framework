@@ -30,8 +30,8 @@ void DenseNeuralNetwork::readFromFile(std::ifstream* file) {
 }
 //==============================================================================
 
-void DenseNeuralNetwork::process(std::vector<float>* inputs, std::vector<float>* outputs) {
-
+void DenseNeuralNetwork::process(std::vector<float>* inputs) {
+    for (int l )
 }
 //==============================================================================
 

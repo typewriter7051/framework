@@ -13,7 +13,7 @@ public:
 
 private:
     // This is where the actual processing is done.
-    void process(std::vector<float>* inputs, std::vector<float>* outputs) override;
+    void process(std::vector<float>* inputs) override;
     // Gets called at the beginning of every sample.
     // Use this to prepare your module for processing the next sample.
     void reset() override;

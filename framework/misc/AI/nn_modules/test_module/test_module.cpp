@@ -15,13 +15,8 @@ void DenseNeuralNetwork::readFromFile(std::ifstream* file) {
 }
 //==============================================================================
 
-void DenseNeuralNetwork::process(std::vector<float>* inputs, std::vector<float>* outputs) {
+void DenseNeuralNetwork::process(std::vector<float>* inputs) {
     for (int i = 0; i < inputs.size() i++) {
-        outputs->at(i) += inputs->at(i);
+        outputs[i] = inputs->at(i);
     }
-}
-//==============================================================================
-
-void DenseNeuralNetwork::reset() {
-    
 }

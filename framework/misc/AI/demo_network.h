@@ -37,6 +37,19 @@ void initialize(firstNN, lastNN) {
     // Generate profile somehow...
 }
 
+// In nn_module.h
+{
+    // map is an std::map which maps module pointers to the list of their outputs.
+    for child in children {
+        // If output vector for child not yet created.
+        if (map.find(child) == map.end()) {
+            profile.append(std::vector<float>(numInputs));
+            map[child] = &profile.back();
+        }
+        inputs = map[child];
+    }
+}
+
 /*
 ...
 Some main function.
