@@ -16,6 +16,19 @@ DenseNeuralNetwork::DenseNeuralNetwork(std::vector<int> sizes) {
 }
 //==============================================================================
 
+void DenseNeuralNetwork::process(std::vector<float>* inputs) {
+    // For each layer except the last.
+    for (int l = 0; l < weights.size() - 1; l++) {
+        // Multiply layer l to layer l+1.
+
+        // Run activation function on layer l+1.
+    }
+    // Preform multiplication on last layer and store result to outputs.
+
+    // Run activation function on outputs.
+}
+//==============================================================================
+
 void DenseNeuralNetwork::trainModule(std::vector<float>* derivs) {
 
 }
@@ -30,11 +43,11 @@ void DenseNeuralNetwork::readFromFile(std::ifstream* file) {
 }
 //==============================================================================
 
-void DenseNeuralNetwork::process(std::vector<float>* inputs) {
-    for (int l )
+void DenseNeuralNetwork::multiplyLayers(int l) {
+    
 }
 //==============================================================================
 
-void DenseNeuralNetwork::reset() {
+void DenseNeuralNetwork::activationFunction(int l) {
     
 }
