@@ -22,6 +22,5 @@ public:
 protected:
 
 private:
-    std::vector<float>* inputs;
-    std::vector<float> outputs;
+    std::vector<float>* inputs, outputs;
 };

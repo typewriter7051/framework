@@ -4,9 +4,11 @@
 
 std::vector<float>* NeuralNetwork::runNeuralNetwork(const std::vector<float>* inputs) {
     moduleOrder[0]->process(inputs);
+
     for (int m = 1; m < moduleOrder.size(); m++) {
         moduleOrder[m]->process(moduleOrder[m - 1].getOuptuts());
     }
+
     return moduleOrder.back()->getOuptuts();
 }
 //==============================================================================
