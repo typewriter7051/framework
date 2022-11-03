@@ -6,9 +6,9 @@ public:
     DenseNeuralNetwork(std::vector<int> sizes);
 
     // This is where the actual processing is done.
-    void process(std::vector<float>* inputs) override;
+    void process(const std::vector<float>& inputs) override;
     // derivs is a list containing the derivative of the cost function to each output neuron.
-    void trainModule(std::vector<float>* derivs) override;
+    void trainModule(const std::vector<float>& derivs) override;
 
     void saveToFile(std::ofstream* file) override;
     void readFromFile(std::ifstream* file) override;

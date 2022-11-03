@@ -2,7 +2,7 @@
 #include <fstream>
 //==============================================================================
 
-std::vector<float>* NeuralNetwork::runNeuralNetwork(const std::vector<float>* inputs) {
+const std::vector<float>& NeuralNetwork::runNeuralNetwork(const std::vector<float>& inputs) {
     // Manually run the first module.
     moduleOrder[0]->process(inputs);
 
@@ -16,7 +16,7 @@ std::vector<float>* NeuralNetwork::runNeuralNetwork(const std::vector<float>* in
 }
 //==============================================================================
 
-float NeuralNetwork::getCost(std::vector<float>* inputs, std::vector<float>* expectedOutputs) {
+float NeuralNetwork::getCost(const std::vector<float>& inputs, const std::vector<float>& expectedOutputs) {
     // Run the network first.
     std::vector<float>* outputs = runNeuralNetwork(inputs);
 
@@ -31,7 +31,7 @@ float NeuralNetwork::getCost(std::vector<float>* inputs, std::vector<float>* exp
 }
 //==============================================================================
 
-void NeuralNetwork::trainNeuralNetwork(std::vector<float>* inputs, std::vector<float>* expectedOutputs, float stepSize) {
+void NeuralNetwork::trainNeuralNetwork(const std::vector<float>& inputs, const std::vector<float>& expectedOutputs, float stepSize) {
     float cost = getCost(inputs, expectedOutputs);
 
     // Calculate cost with respect to each output neuron.

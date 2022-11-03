@@ -19,14 +19,14 @@ DenseNeuralNetwork::DenseNeuralNetwork(std::vector<int> sizes) {
 }
 //==============================================================================
 
-void DenseNeuralNetwork::process(std::vector<float>* inputs) {
+void DenseNeuralNetwork::process(const std::vector<float>& inputs) {
     // Multiply input layer to first hidden layer.
-    int numINs = inputs->size();
+    int numINs = inputs.size();
     int numONs = neurons[0].size();
     for (int on = 0; on < numONs; on++) {
         float sum = 0;
         for (int in = 0; in < numINs; in++) {
-            sum += inputs->at(in) * weights[0][on * numINs + in];
+            sum += inputs[in] * weights[0][on * numINs + in];
         }
         neurons[0][on] = sum;
     }
@@ -51,7 +51,7 @@ void DenseNeuralNetwork::process(std::vector<float>* inputs) {
 }
 //==============================================================================
 
-void DenseNeuralNetwork::trainModule(std::vector<float>* derivs) {
+void DenseNeuralNetwork::trainModule(const std::vector<float>& derivs) {
 
 }
 //==============================================================================

@@ -5,9 +5,9 @@
 
 class NeuralNetwork {
 public:
-    std::vector<float>* runNeuralNetwork(const std::vector<float>* inputs);
-    float getCost(const std::vector<float>* expectedOutputs);
-    void trainNeuralNetwork(std::vector<float>* inputs, std::vector<float>* expectedOutputs);
+    std::vector<float>* runNeuralNetwork(const std::vector<float>& inputs);
+    float getCost(const std::vector<float>& expectedOutputs);
+    void trainNeuralNetwork(const std::vector<float>& inputs, const std::vector<float>& expectedOutputs);
 
     void saveToFile(std::string fileName);
     void loadFromFile(std::string fileName);
