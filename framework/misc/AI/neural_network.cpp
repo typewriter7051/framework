@@ -3,25 +3,29 @@
 //==============================================================================
 
 std::vector<float>* NeuralNetwork::runNeuralNetwork(const std::vector<float>* inputs) {
+    // Manually run the first module.
     moduleOrder[0]->process(inputs);
 
+    // Run the rest of the modules passing the output of the previous into the next.
     for (int m = 1; m < moduleOrder.size(); m++) {
         moduleOrder[m]->process(moduleOrder[m - 1].getOuptuts());
     }
 
+    // Finally return the output of the last module.
     return moduleOrder.back()->getOuptuts();
 }
 //==============================================================================
 
 float NeuralNetwork::getCost(std::vector<float>* inputs, std::vector<float>* expectedOutputs) {
+    // Run the network first.
     std::vector<float>* outputs = runNeuralNetwork(inputs);
 
+    // Residual sum of squares.
     cost = 0;
     for (int f = 0; f < outputs->size(); f++) {
         float temp = outputs->at(f) - expectedOutputs->at(f);
         cost += temp * temp;
     }
-
     cost /= outputs->size();
     return sqrt(cost);
 }

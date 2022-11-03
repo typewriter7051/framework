@@ -20,6 +20,5 @@ private:
     std::vector<std::vector<float>> biases;
     std::vector<std::vector<float>> weights;
 
-    void multiplyLayers(int l);
     void activationFunction(int l);
 };
