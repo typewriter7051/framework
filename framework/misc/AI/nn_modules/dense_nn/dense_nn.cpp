@@ -20,6 +20,8 @@ DenseNeuralNetwork::DenseNeuralNetwork(std::vector<int> sizes) {
 //==============================================================================
 
 void DenseNeuralNetwork::process(const std::vector<float>& inputs) {
+    // SUGGESTION: try copying over the input layer then merging to 1 loop.
+
     // Multiply input layer to first hidden layer.
     int numINs = inputs.size();
     int numONs = neurons[0].size();
@@ -28,9 +30,10 @@ void DenseNeuralNetwork::process(const std::vector<float>& inputs) {
         for (int in = 0; in < numINs; in++) {
             sum += inputs[in] * weights[0][on * numINs + in];
         }
-        neurons[0][on] = sum;
+        neurons[0][on] = sum + biases[0][on];
+        // Sigmoid activation.
+        neurons[0][on] = 1 / (1 + exp(-neurons[0][on]));
     }
-    // Run activation function on first hidden layer.
 
     // For each layer after the first.
     for (int l = 0; l < weights.size() - 1; l++) {
@@ -42,11 +45,10 @@ void DenseNeuralNetwork::process(const std::vector<float>& inputs) {
             for (int in = 0; in < numINs; in++) {
                 sum += neurons[l][in] * weights[l + 1][on * numINS + in];
             }
-            neurons[l + 1][on] = sum;
+            neurons[l + 1][on] = sum + biases[l + 1][on];
+            // Sigmoid activation.
+            activationFunction(neurons[l + 1][on], 0);
         }
-
-        // Run activation function on layer l+1.
-        // ...
     }
 }
 //==============================================================================
@@ -63,10 +65,15 @@ void DenseNeuralNetwork::saveToFile(std::ofstream* file) {
 void DenseNeuralNetwork::readFromFile(std::ifstream* file) {
 
 }
+
 //==============================================================================
 
-void DenseNeuralNetwork::activationFunction(int l) {
-    for (int n = 0; n < neurons[l].size(); n += 8) {
-        // Default is sigmoid.
+inline void activationFunction(float& num, int af) {
+    switch (af) {
+        // Sigmoid
+        case (0): num = 1 / (1 + exp(-num)); break;
+        // Add more here.
+        case (1): break;
+        default: break;
     }
 }

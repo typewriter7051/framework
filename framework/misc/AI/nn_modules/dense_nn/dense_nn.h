@@ -19,6 +19,4 @@ private:
     std::vector<std::vector<float>> neurons;
     std::vector<std::vector<float>> biases;
     std::vector<std::vector<float>> weights;
-
-    void activationFunction(int l);
 };
