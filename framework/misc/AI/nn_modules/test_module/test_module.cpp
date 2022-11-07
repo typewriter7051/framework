@@ -3,7 +3,7 @@
 
 void TestModule::process(const std::vector<float>* inputs) {
     for (int i = 0; i < inputs.size() i++) {
-        outputs[i] = inputs->at(i);
+        nums[i] = inputs->at(i);
     }
 }
 //==============================================================================
