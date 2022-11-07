@@ -2,13 +2,13 @@
 #include <fstream>
 //==============================================================================
 
-const std::vector<float>& NeuralNetwork::runNeuralNetwork(const std::vector<float>& inputs) {
+const std::vector<float>* NeuralNetwork::runNeuralNetwork(const std::vector<float>* inputs) {
     // Manually run the first module.
     moduleOrder[0]->process(inputs);
 
     // Run the rest of the modules passing the output of the previous into the next.
     for (int m = 1; m < moduleOrder.size(); m++) {
-        moduleOrder[m]->process(moduleOrder[m - 1].getOuptuts());
+        moduleOrder[m]->process(moduleOrder[m - 1]->getOuptuts());
     }
 
     // Finally return the output of the last module.
@@ -16,12 +16,12 @@ const std::vector<float>& NeuralNetwork::runNeuralNetwork(const std::vector<floa
 }
 //==============================================================================
 
-float NeuralNetwork::getCost(const std::vector<float>& inputs, const std::vector<float>& expectedOutputs) {
+float NeuralNetwork::getCost(const std::vector<float>* inputs, const std::vector<float>* expectedOutputs) {
     // Run the network first.
-    std::vector<float>* outputs = runNeuralNetwork(inputs);
+    const std::vector<float>* outputs = runNeuralNetwork(inputs);
 
     // Residual sum of squares.
-    cost = 0;
+    float cost = 0;
     for (int f = 0; f < outputs->size(); f++) {
         float temp = outputs->at(f) - expectedOutputs->at(f);
         cost += temp * temp;
@@ -31,7 +31,7 @@ float NeuralNetwork::getCost(const std::vector<float>& inputs, const std::vector
 }
 //==============================================================================
 
-void NeuralNetwork::trainNeuralNetwork(const std::vector<float>& inputs, const std::vector<float>& expectedOutputs, float stepSize) {
+void NeuralNetwork::trainNeuralNetwork(const std::vector<float>* inputs, const std::vector<float>* expectedOutputs, float stepSize) {
     float cost = getCost(inputs, expectedOutputs);
 
     // Calculate cost with respect to each output neuron.

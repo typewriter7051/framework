@@ -5,7 +5,7 @@
 DenseNeuralNetwork::DenseNeuralNetwork(std::vector<int> sizes) {
     neurons = std::vector<std::vector<float>>(sizes.size());
     weights = std::vector<std::vector<float>>(sizes.size() - 1);
-    biases = std::vector<std::vector<int>>(sizes.size());
+    biases = std::vector<std::vector<float>>(sizes.size());
 
     for (int i = 0; i < sizes.size(); i++) {
         neurons[i].resize(sizes[i]);
@@ -19,16 +19,16 @@ DenseNeuralNetwork::DenseNeuralNetwork(std::vector<int> sizes) {
 }
 //==============================================================================
 
-void DenseNeuralNetwork::process(const std::vector<float>& inputs) {
+void DenseNeuralNetwork::process(const std::vector<float>* inputs) {
     // SUGGESTION: try copying over the input layer then merging to 1 loop.
 
     // Multiply input layer to first hidden layer.
-    int numINs = inputs.size();
+    int numINs = inputs->size();
     int numONs = neurons[0].size();
     for (int on = 0; on < numONs; on++) {
         float sum = 0;
         for (int in = 0; in < numINs; in++) {
-            sum += inputs[in] * weights[0][on * numINs + in];
+            sum += inputs->at(in) * weights[0][on * numINs + in];
         }
         neurons[0][on] = sum + biases[0][on];
         // Sigmoid activation.
@@ -43,7 +43,7 @@ void DenseNeuralNetwork::process(const std::vector<float>& inputs) {
         for (int on = 0; on < numONs; on++) {
             float sum = 0;
             for (int in = 0; in < numINs; in++) {
-                sum += neurons[l][in] * weights[l + 1][on * numINS + in];
+                sum += neurons[l][in] * weights[l + 1][on * numINs + in];
             }
             neurons[l + 1][on] = sum + biases[l + 1][on];
             // Sigmoid activation.
@@ -53,7 +53,7 @@ void DenseNeuralNetwork::process(const std::vector<float>& inputs) {
 }
 //==============================================================================
 
-void DenseNeuralNetwork::trainModule(const std::vector<float>& derivs) {
+void DenseNeuralNetwork::train(const std::vector<float>* derivs, float stepSize) {
 
 }
 //==============================================================================
