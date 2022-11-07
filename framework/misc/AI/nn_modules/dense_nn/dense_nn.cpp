@@ -54,7 +54,7 @@ void DenseNeuralNetwork::process(const std::vector<float>* inputs) {
 //==============================================================================
 
 void DenseNeuralNetwork::train(const std::vector<float>* derivs, float stepSize) {
-
+    
 }
 //==============================================================================
 
