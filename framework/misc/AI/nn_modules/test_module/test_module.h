@@ -3,7 +3,10 @@
 class TestModule : public NNModule {
 public:
     TestModule() {}
-    TestModule(std::vector<int> sizes);
+    TestModule(int size) {
+        nums.resize(size);
+        outputs = &nums;
+    }
 
     // derivs is a list containing the derivative of the cost function to each output neuron.
     void trainModule(std::vector<float>* derivs) override;
@@ -14,7 +17,6 @@ public:
 private:
     // This is where the actual processing is done.
     void process() override;
-    // Gets called at the beginning of every sample.
-    // Use this to prepare your module for processing the next sample.
-    void reset() override;
+
+    std::vector<float> nums;
 };

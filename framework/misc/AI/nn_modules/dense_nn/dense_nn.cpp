@@ -70,9 +70,19 @@ void DenseNeuralNetwork::readFromFile(std::ifstream* file) {
 inline void activationFunction(float& num, int af) {
     switch (af) {
         // Sigmoid
-        case (0): num = 1 / (1 + exp(-num)); break;
+        case 0: num = 1 / (1 + exp(-num)); break;
         // Add more here.
-        case (1): break;
+        case 1: break;
+        default: break;
+    }
+}
+
+inline void activationFunctionDerivative(float& num, int af) {
+    switch (af) {
+        // Sigmoid
+        case 0: break;
+        // Add more here.
+        case 1: break;
         default: break;
     }
 }
