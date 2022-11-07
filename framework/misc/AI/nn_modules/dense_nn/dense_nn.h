@@ -16,7 +16,7 @@ public:
 private:
     // Outer dimension is layer index.
     // neurons[layer] = matrixMultiply(neurons[layer - 1], weights[layer]) + biases[layer]
-    std::vector<std::vector<float>> neurons;
-    std::vector<std::vector<float>> biases;
-    std::vector<std::vector<float>> weights;
+    std::vector<std::vector<float>> neurons,
+    biases,  biasDerivs,
+    weights, weightDerivs;
 };

@@ -65,7 +65,6 @@ void DenseNeuralNetwork::saveToFile(std::ofstream* file) {
 void DenseNeuralNetwork::readFromFile(std::ifstream* file) {
 
 }
-
 //==============================================================================
 
 inline void activationFunction(float& num, int af) {
