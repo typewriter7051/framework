@@ -5,14 +5,15 @@
 
 class TestNeuralNetwork : public NeuralNetwork {
 public:
-    TestNeuralNetwork::TestNeuralNetwork(int size) {
+    TestNeuralNetwork(int size) {
         m1 = TestModule(size);
         m2 = TestModule(size);
         m3 = TestModule(size);
 
-        initialize(std::vector<NNModule*> moduleOrder{
-            m1, m2, m3
-        }); 
+        std::vector<NNModule*> moduleOrder {
+            &m1, &m2, &m3
+        };
+        initialize(moduleOrder);
     }
 
 private:

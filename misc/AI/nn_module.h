@@ -21,5 +21,5 @@ public:
     virtual void readFromFile(std::ifstream* file);
 
 protected:
-    std::vector<float>* inputs, outputs;
+    std::vector<float> *inputs, *outputs;
 };

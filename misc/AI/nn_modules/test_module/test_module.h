@@ -15,7 +15,6 @@ public:
     void readFromFile(std::ifstream* file) override;
 
 private:
-    // This function can be private because the base function was declared as public.
     // This is where the actual processing is done.
     void process(const std::vector<float>* inputs) override;
 
