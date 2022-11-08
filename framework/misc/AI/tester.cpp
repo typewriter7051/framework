@@ -4,6 +4,7 @@
 #include "test_module/test_module.h"
 
 class TestNeuralNetwork : public NeuralNetwork {
+public:
     TestNeuralNetwork::TestNeuralNetwork(int size) {
         m1 = TestModule(size);
         m2 = TestModule(size);
@@ -16,11 +17,11 @@ class TestNeuralNetwork : public NeuralNetwork {
 
 private:
     TestModule m1, m2, m3;
-}
+};
 //==============================================================================
 
-bool OutputsEqualsInputs(TestNeuralNetwork* nn, std::vector<float>* inputs) {
-    std::vector<float>* outputs = nn->runNeuralNetwork(inputs);
+bool outputsEqualsInputs(TestNeuralNetwork* nn, std::vector<float>* inputs) {
+    const std::vector<float>* outputs = nn->runNeuralNetwork(inputs);
 
     return (&outputs == &inputs);
 }
@@ -30,7 +31,7 @@ int main() {
     TestNeuralNetwork nn(10);
     std::vector<float> inputs(10, 0.5);
 
-    assert(OutputsEqualsInputs(&nn, &inputs));
+    assert(outputsEqualsInputs(&nn, &inputs));
 
     return 0;
 }
