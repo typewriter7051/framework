@@ -1,18 +1,19 @@
 #include <iostream>
 #include <cassert>
 #include "neural_network.h"
-#include "test_module/test_module.h"
+#include "nn_modules/test_module/test_module.h"
 
 class TestNeuralNetwork : public NeuralNetwork {
 public:
-    TestNeuralNetwork::TestNeuralNetwork(int size) {
+    TestNeuralNetwork(int size) {
         m1 = TestModule(size);
         m2 = TestModule(size);
         m3 = TestModule(size);
 
-        initialize(std::vector<NNModule*>{
-            m1, m2, m3
-        }); 
+        std::vector<NNModule*> moduleOrder {
+            &m1, &m2, &m3
+        };
+        initialize(moduleOrder);
     }
 
 private:

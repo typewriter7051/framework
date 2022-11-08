@@ -1,5 +1,6 @@
 #include "neural_network.h"
 #include <fstream>
+#include <cmath>
 //==============================================================================
 
 const std::vector<float>* NeuralNetwork::runNeuralNetwork(const std::vector<float>* inputs) {
