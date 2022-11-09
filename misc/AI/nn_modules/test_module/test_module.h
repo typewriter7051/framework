@@ -4,7 +4,7 @@ class TestModule : public NNModule {
 public:
     TestModule() {}
     TestModule(int size) {
-        nums.resize(size);
+	nums = std::vector<float>(size);
         outputs = &nums;
     }
 

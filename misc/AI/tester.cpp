@@ -32,7 +32,7 @@ int main() {
     TestNeuralNetwork nn(10);
     std::vector<float> inputs(10, 0.5);
 
-    assert(outputsEqualsInputs(&nn, &inputs));
+    outputsEqualsInputs(&nn, &inputs);
 
     return 0;
 }

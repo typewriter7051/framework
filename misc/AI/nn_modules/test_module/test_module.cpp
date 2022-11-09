@@ -1,9 +1,12 @@
 #include "test_module.h"
+#include <iostream>
 //==============================================================================
 
 void TestModule::process(const std::vector<float>* inputs) {
+    //if (inputs->size() != nums.size()) return;
     for (int i = 0; i < inputs->size(); i++) {
-        nums[i] = inputs->at(i);
+	std::cout << i << "out of " << inputs->size() << " and " << nums.size() << std::endl;
+        nums.at(i) = inputs->at(i);
     }
 }
 //==============================================================================
