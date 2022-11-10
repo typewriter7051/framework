@@ -1,3 +1,4 @@
+#include <iostream>
 #include <cassert>
 #include "neural_network.h"
 #include "nn_modules/test_module/test_module.h"
@@ -23,13 +24,17 @@ private:
 bool outputsEqualsInputs(TestNeuralNetwork* nn, std::vector<float>* inputs) {
     const std::vector<float>* outputs = nn->runNeuralNetwork(inputs);
 
+    for (int i = 0; i < inputs->size(); i++) {
+	std::cout << inputs->at(i) << " vs " << outputs->at(i) << std::endl;
+    }
+
     return (&outputs == &inputs);
 }
 //==============================================================================
 
 int main() {
     TestNeuralNetwork nn(10);
-    std::vector<float> inputs(10, 0.5);
+    std::vector<float> inputs(10, 0.8);
 
     outputsEqualsInputs(&nn, &inputs);
 
