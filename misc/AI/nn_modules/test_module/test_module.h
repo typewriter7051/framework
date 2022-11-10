@@ -8,6 +8,8 @@ public:
         outputs = &nums;
     }
 
+    const std::vector<float>* getOutputs() override;
+
     // derivs is a list containing the derivative of the cost function to each output neuron.
     void train(const std::vector<float>* derivs, float stepSize) override;
 

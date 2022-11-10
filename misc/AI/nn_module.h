@@ -6,9 +6,9 @@
 
 class NNModule {
 public:
-    NNModule();
+    NNModule() {}
 
-    const std::vector<float>* getOutputs();
+    virtual const std::vector<float>* getOutputs() = 0;
 
     // This is where the actual processing is done. Draw input values from the inputs vector
     // then store the result in the outputs vector. 
