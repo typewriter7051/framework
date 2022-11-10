@@ -9,11 +9,11 @@ const std::vector<float>* NeuralNetwork::runNeuralNetwork(const std::vector<floa
 
     // Run the rest of the modules passing the output of the previous into the next.
     for (int m = 1; m < moduleOrder.size(); m++) {
-        moduleOrder[m]->process(moduleOrder[m - 1]->getOuptuts());
+        moduleOrder[m]->process(moduleOrder[m - 1]->getOutputs());
     }
 
     // Finally return the output of the last module.
-    return moduleOrder.back()->getOuptuts();
+    return moduleOrder.back()->getOutputs();
 }
 //==============================================================================
 
@@ -41,7 +41,7 @@ void NeuralNetwork::trainNeuralNetwork(const std::vector<float>* inputs, const s
 
     // Train all except the first module.
     for (float m = moduleOrder.size() - 1; m > 0; m--) {
-        moduleOrder[m]->train(moduleOrder[m - 1]->getOuptuts(), stepSize);
+        moduleOrder[m]->train(moduleOrder[m - 1]->getOutputs(), stepSize);
     }
 
     // Train the first module.

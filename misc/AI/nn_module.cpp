@@ -1,7 +1,9 @@
 #include "nn_module.h"
 
-NNModule::NNModule() {}
+NNModule::NNModule() {
+    outputs = NULL;
+}
 
-const std::vector<float>* NNModule::getOuptuts() {
+const std::vector<float>* NNModule::getOutputs() {
     return outputs;
 }
