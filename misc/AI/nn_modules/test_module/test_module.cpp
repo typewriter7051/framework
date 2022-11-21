@@ -4,6 +4,9 @@
 const std::vector<float>* TestModule::getOutputs() {
     return &nums;
 }
+
+void TestModule::initializeParameters(float min, float max) {
+}
 //==============================================================================
 
 void TestModule::process(const std::vector<float>* inputs) {

@@ -50,8 +50,11 @@ void NeuralNetwork::trainNeuralNetwork(const std::vector<float>* inputs, const s
 }
 //==============================================================================
 
-void NeuralNetwork::initialize(std::vector<NNModule*> modules) {
+void NeuralNetwork::initialize(std::vector<NNModule*> modules, float min, float max) {
     moduleOrder = modules;
+    for (NNModule* m : modules) {
+        m->initializeParameters(min, max);
+    }
 }
 //==============================================================================
 

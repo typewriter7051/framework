@@ -5,10 +5,10 @@ public:
     TestModule() {}
     TestModule(int size) {
 	nums = std::vector<float>(size);
-        outputs = &nums;
     }
 
     const std::vector<float>* getOutputs() override;
+    void initializeParameters(float min, float max) override;
 
     // derivs is a list containing the derivative of the cost function to each output neuron.
     void train(const std::vector<float>* derivs, float stepSize) override;

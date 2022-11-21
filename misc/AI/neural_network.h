@@ -15,7 +15,7 @@ public:
     void loadFromFile(std::string fileName);
 
 protected:
-    void initialize(std::vector<NNModule*> modules);
+    void initialize(std::vector<NNModule*> modules, float min, float max);
 
 private:
     // Order of modules run first to last.
