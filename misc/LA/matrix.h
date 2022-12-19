@@ -1,7 +1,9 @@
-using namespace LA {
+namespace LA {
 
 class Matrix {
 public:
+    float elements[][];
+
     //==========================================================================
     // Constructors.
     Matrix() {}
@@ -10,7 +12,7 @@ public:
         elements = float[i][j];
     }
 
-    Matrix(float[][] data) {
+    Matrix(float data[][]) {
         elements = data;
     }
 
@@ -124,7 +126,6 @@ public:
         }
     }
 
-    float elements[][];
 
 private:
     // Helper function intended to be compiled with optimization to trim out 
@@ -153,6 +154,6 @@ private:
 
         return A;
     }
-}
+};
 
 }

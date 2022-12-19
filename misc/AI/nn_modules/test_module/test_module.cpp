@@ -1,7 +1,7 @@
 #include "test_module.h"
 //==============================================================================
 
-const std::vector<float>* TestModule::getOutputs() {
+c_vecp TestModule::getOutputs() {
     return &nums;
 }
 
@@ -9,15 +9,16 @@ void TestModule::initializeParameters(float min, float max) {
 }
 //==============================================================================
 
-void TestModule::process(const std::vector<float>* inputs) {
+void TestModule::process(c_vecp inputs) {
     for (int i = 0; i < inputs->size(); i++) {
         nums.at(i) = inputs->at(i);
     }
 }
 //==============================================================================
 
-void TestModule::train(const std::vector<float>* derivs, float stepSize) {
-
+c_vecp TestModule::train(c_vecp derivs, float stepSize) {
+    // Just pass down the derivs pointer.
+    return derivs;
 }
 //==============================================================================
 

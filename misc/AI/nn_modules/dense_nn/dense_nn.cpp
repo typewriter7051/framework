@@ -5,23 +5,43 @@
 // #include <immintrin.h>
 //==============================================================================
 
+/*
+neurons is a vector of vectors that holds the values of each neuron in
+a neural network, in addition to a 1 at the end for bias.
+[y1, y2, ..., ym, 1]
+[x1, x2, ..., xn, 1]
+...
+
+derivs stores the derivative of the cost w/ respect to each neuron (before applying activation function)
+and has almost the same structure except it does not hold a 1's column.
+
+weights is a vector of vectors that holds the weights for each layer as well as bias.
+Each layer looks like the following where wij is the weight connecting the ith
+output neuron to the jth input neuron and bi is the bias for the ith neuron.
+[w11, w12, ..., w1n, b1, w21, w22, ..., w2n, b2, ..., wmn, bm]
+*/
 DenseNeuralNetwork::DenseNeuralNetwork(std::vector<int> sizes) {
-    inputDerivs = std::vector<float>(sizes[0]);
-    neurons = std::vector<std::vector<float>>(sizes.size() - 1);
-    weights = neurons;
+    neurons = std::vector<std::vector<float>>(sizes.size());
+    derivs = neurons;
+    weights = std::vector<std::vector<float>>(sizes.size() - 1);
+
+    for (int i = 0; i < sizes.size(); i++) {
+        // Resize and add 1's column.
+        neurons[i].resize(sizes[i] + 1);
+        neurons[i][sizes[i]] = 1;
+
+        derivs[i].resize(sizes[i]);
+    }
+    // Erase the 1 element in the output layer.
+    int lastIndex = sizes.size() - 1;
+    neurons[lastIndex].erase(neurons[lastIndex].end() - 1);
 
     for (int i = 0; i < sizes.size() - 1; i++) {
-        weights[i].resize(sizes[i] * sizes[i + 1]);
-        neurons[i].resize(sizes[i + 1]);
+        weights[i].resize((sizes[i] + 1) * sizes[i + 1]);
     }
-
-    // derisv and biases have the exact same structure as neurons.
-    derivs = neurons;
-    biases = neurons;
 }
 //==============================================================================
-
-const std::vector<float>* DenseNeuralNetwork::getOutputs() {
+c_vecp DenseNeuralNetwork::getOutputs() {
     return &neurons.back();
 }
 
@@ -34,107 +54,84 @@ void DenseNeuralNetwork::initializeParameters(float min, float max) {
 
     // Randomize weights.
     for (int l = 0; l < weights.size(); l++) {
-	for (int w = 0; w < weights[l].size(); w++) {
-	    weights[l][w] = dist(mt);
-	}
-    }
-
-    // Randomize biases.
-    for (int l = 0; l < biases.size(); l++) {
-        for (int b = 0; b < biases[l].size(); b++) {
-	    biases[l][b] = dist(mt);
-	}
+        for (int w = 0; w < weights[l].size(); w++) {
+            weights[l][w] = dist(mt);
+        }
     }
 }
 
 inline void activationFunction(float&, int);
 inline void activationFunctionDerivative(float&, int);
-void DenseNeuralNetwork::process(const std::vector<float>* inputs) {
-    // SUGGESTION: try copying over the input layer then merging to 1 loop.
+///*
+void DenseNeuralNetwork::process(c_vecp inputs) {
+    // Copy the input vector to the array.
+    neurons[0] = *inputs;
+    neurons[0].push_back(1); // Re-add the 1's column after copying the inputs vector.
 
-    // Multiply input layer to first hidden layer.
-    size_t numINs = inputs->size();
-    size_t numONs = neurons[0].size();
-    for (int on = 0; on < numONs; on++) {
-        float sum = 0;
-        for (int in = 0; in < numINs; in++) {
-            sum += inputs->at(in) * weights[0][on * numINs + in];
-        }
-	// Add bias.
-        neurons[0][on] = sum + biases[0][on];
-    }
-    // Activation function.
-    for (int on = 0; on < numONs; on++) {
-        activationFunction(neurons[0][on], 0);
-    }
-
-    // For each layer after the first.
-    for (int l = 0; l < weights.size() - 1; l++) {
+    // For each layer.
+    for (int l = 0; l < neurons.size() - 1; l++) {
         // Multiply layer l to layer l+1.
-        numINs = neurons[l].size();
-        numONs = neurons[l + 1].size();
+        int numINs = neurons[l].size();         // Include the 1's column in input layer.
+        int numONs = neurons[l + 1].size() - 1; // -1 to ignore 1's column in output layer.
+
+        // Reset the values in output layer from previous run.
+        std::fill(neurons[l + 1].begin(), neurons[l + 1].end() - 1, 0);
+        // Matrix multiplication to output layer.
         for (int on = 0; on < numONs; on++) {
-	    float sum = 0;
             for (int in = 0; in < numINs; in++) {
-                sum += neurons[l][in] * weights[l + 1][on * numINs + in];
+                neurons[l + 1][on] += neurons[l][in] * weights[l][on * numINs + in];
             }
-	    // Add bias.
-            neurons[l + 1][on] = sum + biases[l + 1][on];
         }
-	// Activation function.
-	for (int on = 0; on < numONs; on++) {
+        // Activation function.
+        for (int on = 0; on < numONs; on++) {
             activationFunction(neurons[l + 1][on], 0);
-	}
+        }
     }
 }
+//*/
 //==============================================================================
 
-const std::vector<float>* DenseNeuralNetwork::train(const std::vector<float>* d, float stepSize) {
-    // Need to copy derivs to last layer.
-    derivs[derivs.size() - 1] = d;
+inline void DenseNeuralNetwork::processLayer(int l, float stepSize) {
+    int numONs = neurons[l].size() - 1; // Ignore the 1's column in output layer
+    int numINs = neurons[l - 1].size(); // but not the input layer.
+    
+    for (int on = 0; on < numONs; on++) {
+        // Calculate derivatives for next layer.
+        for (int in = 0; in < numINs - 1; in++) {
+            derivs[l - 1][in] += derivs[l][on] * weights[l - 1][on * numINs + in];
+        }
+        // Move weights (and bias)
+        for (int in = 0; in < numINs; in++) {
+            weights[l - 1][on * numINs + in] -= derivs[l][on] * neurons[l - 1][in] * stepSize;
+        }
+    }
+
+    // Finish the calculation for next layer derivatives.
+    // (Don't run activation function on input layer)
+    if (l > 1)
+    for (int in = 0; in < numINs - 1; in++) {
+        activationFunctionDerivative(derivs[l - 1][in], 0);
+    }
+}
+
+c_vecp DenseNeuralNetwork::train(c_vecp d, float stepSize) {
+    // Copy derivs to last layer.
+    derivs[derivs.size() - 1] = *d;
 
     // Reset derivs to 0.
     for (int l = 0; l < derivs.size(); l++) {
-	std::fill(derivs[l].begin(), derivs[l].end(), 0);
+        std::fill(derivs[l].begin(), derivs[l].end(), 0);
     }
-    std::fill(inputDerivs.begin(), inputDerivs.end(), 0);
 
-    for (int l = weights.size() - 1; l > 0; l--) {
-        int numONs = neurons[l].size();
-        int numINs = neurons[l - 1].size();
-
-        for (int on = 0; on < numONs; on++) {
-	    // Move weights
-	    for (int in = 0; in < numINs; in++) {
-		weights[l][on * numINs + in] -= derivs[l][on] * neurons[l - 1][in] * stepSize;
-	    }
-	    // Move biases
-            biases[l][on] -= derivs[l - 1][on] * stepSize;
-	    // Calculate derivatives for next layer.
-	    for (int in = 0; in < numINs; in++) {
-		derivs[l - 1][in] += derivs[l][on] * weights[l][on * numINs + in];
-	    }
-        }
-	
-	// Finish the calculation for next layer derivatives.
-	for (int in = 0; in < numINs; in++ {
-            activationFunctionDerivative(derivs[l - 1][in]);
-	}
+    // Number of layers (excluding input layer).
+    int numLayers = neurons.size();
+    for (int l = numLayers - 1; l > 0; l--) {
+        // Calculate derivative for next layer, then move weights and biases.
+        processLayer(l, stepSize);
     }	
 
-    // Multiply first hidden layer to input layer.
-    int numINs = inputDerivs.size();
-    for (int on = 0; on < neurons[0].size(); on++) {
-        for (int in = 0; in < numINs; in++) {
-	    inputDerivs[in] += derivs[0][on] * weights[0][on * numINs + in];
-	}
-    }
-
-    for (int in = 0; in < inputDerivs.size(); in++) {
-        activationFunctionDerivative(inputDerivs[in]);
-    }
     // Return new derivatives vector for the next module.
-    return inputDerivs;
+    return &derivs[0];
 }
 //==============================================================================
 
@@ -150,7 +147,7 @@ void DenseNeuralNetwork::readFromFile(std::ifstream* file) {
 inline void activationFunction(float& num, int af) {
     switch (af) {
         // Sigmoid
-        case 0: num = 1 / (1 + exp(-num)); break;
+        case 0: num = 2 / (1 + exp(-2 * num)) - 1; break;
         // Add more here.
         case 1: break;
         default: break;

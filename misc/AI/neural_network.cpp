@@ -3,7 +3,7 @@
 #include <cmath>
 //==============================================================================
 
-const std::vector<float>* NeuralNetwork::runNeuralNetwork(const std::vector<float>* inputs) {
+c_vecp NeuralNetwork::runNeuralNetwork(c_vecp inputs) {
     // Manually run the first module.
     moduleOrder[0]->process(inputs);
 
@@ -17,36 +17,48 @@ const std::vector<float>* NeuralNetwork::runNeuralNetwork(const std::vector<floa
 }
 //==============================================================================
 
-float NeuralNetwork::getCost(const std::vector<float>* inputs, const std::vector<float>* expectedOutputs) {
+std::vector<float> NeuralNetwork::getResiduals(c_vecp inputs, c_vecp expectedOutputs) {
     // Run the network first.
-    const std::vector<float>* outputs = runNeuralNetwork(inputs);
-
-    // Residual sum of squares.
-    float cost = 0;
-    for (int f = 0; f < outputs->size(); f++) {
-        float temp = outputs->at(f) - expectedOutputs->at(f);
-        cost += temp * temp;
+    c_vecp outputs = runNeuralNetwork(inputs);
+    
+    std::vector<float> residuals(outputs->size());
+    for (int i = 0; i < outputs->size(); i++) {
+        residuals[i] = outputs->at(i) - expectedOutputs->at(i);
     }
-    cost /= outputs->size();
+
+    return residuals;
+}
+//==============================================================================
+
+float NeuralNetwork::getCost(c_vecp residuals) {
+    // Sum of squares.
+    float cost = 0;
+    for (int i = 0; i < residuals->size(); i++) {
+        cost += residuals->at(i) * residuals->at(i);
+    }
+    cost /= residuals->size();
+
     return sqrt(cost);
 }
 //==============================================================================
 
-void NeuralNetwork::trainNeuralNetwork(const std::vector<float>* inputs, const std::vector<float>* expectedOutputs, float stepSize) {
-    float cost = getCost(inputs, expectedOutputs);
+void NeuralNetwork::trainNeuralNetwork(c_vecp inputs, c_vecp expectedOutputs, float stepSize) {
+    std::vector<float> residuals = getResiduals(inputs, expectedOutputs);
+    float cost = getCost(&residuals);
 
     // Calculate cost with respect to each output neuron.
-
-    // Assign the costs to the output neurons of the last module.
-
-    // Train all except the first module.
-    for (float m = moduleOrder.size() - 1; m > 0; m--) {
-        moduleOrder[m]->train(moduleOrder[m - 1]->getOutputs(), stepSize);
+    auto n = inputs->size();
+    std::vector<float> costDerivs(n);
+    for (int i = 0; i < n; i++) {
+        costDerivs[n] =  residuals[i] / (cost * n);
     }
 
-    // Train the first module.
-    std::vector<float> dummyList(inputs->size());
-    moduleOrder[0]->train(&dummyList, stepSize);
+    // Train the last module.
+    c_vecp derivs = moduleOrder[moduleOrder.size() - 1]->train(&costDerivs, stepSize);
+    // Train the rest of the modules, constantly updating the derivatives pointer.
+    for (int m = moduleOrder.size() - 2; m >= 0; m--) {
+        derivs = moduleOrder[m]->train(derivs, stepSize);
+    }
 }
 //==============================================================================
 
