@@ -20,5 +20,5 @@ private:
     // This is where the actual processing is done.
     void process(c_vecp inputs) override;
 
-    std::vector<float> nums;
+    std::vector<float> nums, testDerivs;
 };

@@ -99,6 +99,7 @@ inline void DenseNeuralNetwork::processLayer(int l, float stepSize) {
         // Calculate derivatives for next layer.
         for (int in = 0; in < numINs - 1; in++) {
             derivs[l - 1][in] += derivs[l][on] * weights[l - 1][on * numINs + in];
+
         }
         // Move weights (and bias)
         for (int in = 0; in < numINs; in++) {
@@ -115,11 +116,16 @@ inline void DenseNeuralNetwork::processLayer(int l, float stepSize) {
 }
 
 c_vecp DenseNeuralNetwork::train(c_vecp d, float stepSize) {
-    // Copy derivs to last layer.
+    // Copy derivs to last layer and calculate derivative
+    // before activation function.
     derivs[derivs.size() - 1] = *d;
+    for (int i = 0; i < d->size(); i++) {
+        activationFunctionDerivative(derivs[derivs.size() - 1][i], 0);
+    }
 
-    // Reset derivs to 0.
-    for (int l = 0; l < derivs.size(); l++) {
+    // Reset derivs of hidden layers to 0, but don't erase the
+    // newly copied last layer derivs.
+    for (int l = 0; l < derivs.size() - 1; l++) {
         std::fill(derivs[l].begin(), derivs[l].end(), 0);
     }
 

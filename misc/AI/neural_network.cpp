@@ -50,7 +50,7 @@ void NeuralNetwork::trainNeuralNetwork(c_vecp inputs, c_vecp expectedOutputs, fl
     auto n = inputs->size();
     std::vector<float> costDerivs(n);
     for (int i = 0; i < n; i++) {
-        costDerivs[n] =  residuals[i] / (cost * n);
+        costDerivs[i] = residuals[i] / (cost * n);
     }
 
     // Train the last module.

@@ -9,32 +9,38 @@
 class TestNeuralNetwork : public NeuralNetwork {
 public:
     TestNeuralNetwork(int size) {
-        m1 = TestModule(size);
-        m2 = TestModule(size);
-        m3 = TestModule(size);
+        int comp = 16;
 
 	    d1 = DenseNeuralNetwork(std::vector<int> {
 			size,
-			size,
-			size,
+			size / comp
+		});
+
+        m1 = TestModule(size / comp);
+        m2 = TestModule(size / comp);
+        m3 = TestModule(size / comp);
+
+	    d2 = DenseNeuralNetwork(std::vector<int> {
+			size / comp,
 			size
 		});
+
         // Run the pipeline from first to last.
         std::vector<NNModule*> moduleOrder {
-            &m1, &m2, &m3, &d1
+            &d1, &m1, &m2, &m3, &d2
         };
         initialize(moduleOrder, -1, 1);
     }
     
 private:
     TestModule m1, m2, m3;
-    DenseNeuralNetwork d1;
+    DenseNeuralNetwork d1, d2;
 };
 //==============================================================================
 std::vector<float> generateData(int n) {
     std::mt19937 mt;
-    //std::uniform_real_distribution<> dist(0, 1);
-    std::normal_distribution<> dist(0, 100);
+    std::uniform_real_distribution<> dist(0, 1);
+    //std::normal_distribution<> dist(0, 1);
 
     std::vector<float> data(n);
     for (int i = 0; i < n; i++) {
@@ -51,7 +57,7 @@ void runPipeline() {
     TestNeuralNetwork nn(size);
 
     std::vector<float> inputs = generateData(size);
-    for (int i = 0; i < 64 * 64; i++) {
+    for (int i = 0; i < 16 * 16; i++) {
         nn.runNeuralNetwork(&inputs);
     }
     const std::vector<float>* outputs = nn.runNeuralNetwork(&inputs);
@@ -63,19 +69,28 @@ void runPipeline() {
 }
 //==============================================================================
 
-void trainPipeline() {
-    int size = 256;
+void trainPipeline(int size, int iters) {
     TestNeuralNetwork nn(size);
-
     std::vector<float> inputs = generateData(size);
-    for (int i = 0; i < 64 * 64; i++) {
-        nn.trainNeuralNetwork(&inputs, &inputs, 0.1);
+
+    std::cout << "Size (" << size << ", " << size << ") neural network\n";
+    // Print residuals.
+    auto resids = nn.getResiduals(&inputs, &inputs);
+    std::cout << "Cost before training: " << nn.getCost(&resids) << "\n";
+    std::cout << "Training " << iters << " iterations...\n";
+    for (int i = 0; i < iters; i++) {
+        nn.trainNeuralNetwork(&inputs, &inputs, 1);
     }
+
+    // Print residuals.
+    resids = nn.getResiduals(&inputs, &inputs);
+    std::cout << "Cost after training: " << nn.getCost(&resids) << "\n";
 }
 //==============================================================================
 int main() {
+    std::cout << std::endl;
     //runPipeline();
-    trainPipeline();
+    trainPipeline(64, 100);
 
     return 0;
 }
