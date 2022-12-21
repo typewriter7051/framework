@@ -82,6 +82,7 @@ void DenseNeuralNetwork::process(c_vecp inputs) {
                 neurons[l + 1][on] += neurons[l][in] * weights[l][on * numINs + in];
             }
         }
+
         // Activation function.
         for (int on = 0; on < numONs; on++) {
             activationFunction(neurons[l + 1][on], 0);

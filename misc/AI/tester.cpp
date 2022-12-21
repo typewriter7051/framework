@@ -13,9 +13,10 @@ public:
 
 	    d1 = DenseNeuralNetwork(std::vector<int> {
 			size,
-			size / comp
+			size
 		});
 
+        /*
         m1 = TestModule(size / comp);
         m2 = TestModule(size / comp);
         m3 = TestModule(size / comp);
@@ -24,10 +25,11 @@ public:
 			size / comp,
 			size
 		});
+        */
 
         // Run the pipeline from first to last.
         std::vector<NNModule*> moduleOrder {
-            &d1, &m1, &m2, &m3, &d2
+            &d1
         };
         initialize(moduleOrder, -1, 1);
     }
@@ -69,7 +71,7 @@ void runPipeline() {
 }
 //==============================================================================
 
-void trainPipeline(int size, int iters) {
+void trainPipeline(int size, float stepSize, int updateRate, float threshold) {
     TestNeuralNetwork nn(size);
     std::vector<float> inputs = generateData(size);
 
@@ -77,9 +79,23 @@ void trainPipeline(int size, int iters) {
     // Print residuals.
     auto resids = nn.getResiduals(&inputs, &inputs);
     std::cout << "Cost before training: " << nn.getCost(&resids) << "\n";
-    std::cout << "Training " << iters << " iterations...\n";
-    for (int i = 0; i < iters; i++) {
-        nn.trainNeuralNetwork(&inputs, &inputs, 1);
+
+    float cost = nn.getCost(&resids);
+    float prevCost = cost + 100;
+    int i = 1;
+    while (prevCost - cost > threshold) {
+        nn.trainNeuralNetwork(&inputs, &inputs, stepSize);
+
+        // Print status update.
+        if (i % updateRate == 0) {
+            std::cout << "iteration " << i << std::endl;
+
+            resids = nn.getResiduals(&inputs, &inputs);
+            prevCost = cost;
+            cost = nn.getCost(&resids);
+            std::cout << "new cost: " << cost << std::endl;
+        }
+        i++;
     }
 
     // Print residuals.
@@ -90,7 +106,7 @@ void trainPipeline(int size, int iters) {
 int main() {
     std::cout << std::endl;
     //runPipeline();
-    trainPipeline(64, 100);
+    trainPipeline(64, 0.001, 10000, 0.0001);
 
     return 0;
 }
