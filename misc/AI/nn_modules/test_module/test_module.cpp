@@ -23,9 +23,9 @@ c_vecp TestModule::train(c_vecp derivs, float stepSize) {
 //==============================================================================
 
 void TestModule::saveToFile(std::ofstream* file) {
-
+    // Nothing to do here...
 }
 
 void TestModule::readFromFile(std::ifstream* file) {
-
+    // Nothing to do here...
 }

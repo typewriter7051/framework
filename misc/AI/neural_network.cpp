@@ -77,6 +77,7 @@ void NeuralNetwork::saveToFile(std::string fileName) {
     for (NNModule* cm : moduleOrder) {
         cm->saveToFile(&file);
     }
+    file.close();
 }
 //==============================================================================
 
@@ -87,4 +88,5 @@ void NeuralNetwork::loadFromFile(std::string fileName) {
     for (NNModule* cm : moduleOrder) {
         cm->readFromFile(&file);
     }
+    file.close();
 }

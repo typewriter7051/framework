@@ -146,11 +146,18 @@ c_vecp DenseNeuralNetwork::train(c_vecp d, float stepSize) {
 //==============================================================================
 
 void DenseNeuralNetwork::saveToFile(std::ofstream* file) {
-
+    // Just write every weight (and bias) value to file.
+    for (int l = 0; l < weights.size(); l++) {
+        // Dump the entire array into disk.
+        file->write((char*) &weights[l][0], sizeof(float) * weights[l].size());
+    }
 }
 
 void DenseNeuralNetwork::readFromFile(std::ifstream* file) {
-
+    // Same as above except read from file.
+    for (int l = 0; l < weights.size(); l++) {
+        file->read((char*) &weights[l][0], sizeof(float) * weights[l].size());
+    }
 }
 //==============================================================================
 
@@ -158,9 +165,10 @@ inline void activationFunction(float& num, int af) {
     //std::cout << num;
     switch (af) {
     // Sigmoid
-    case 0:
+    case 0: {
         num = 2 / (1 + exp(-2 * num)) - 1;
         break;
+    }
     // Add more here.
     case 1: break;
     default: break;
@@ -170,11 +178,12 @@ inline void activationFunction(float& num, int af) {
 inline void activationFunctionDerivative(float& num, int af) {
     switch (af) {
     // Sigmoid
-    case 0:
+    case 0: {
         float e = exp(-2 * num);
         float e1 = e + 1;
         num = 4 * e / (e1 * e1);
         break;
+    }
     // Add more here.
     case 1: break;
     default: break;

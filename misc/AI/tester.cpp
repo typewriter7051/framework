@@ -101,12 +101,14 @@ void trainPipeline(int size, float stepSize, int updateRate, float threshold) {
     // Print residuals.
     resids = nn.getResiduals(&inputs, &inputs);
     std::cout << "Cost after training: " << nn.getCost(&resids) << "\n";
+
+    nn.saveToFile("test.nn");
 }
 //==============================================================================
 int main() {
     std::cout << std::endl;
     //runPipeline();
-    trainPipeline(64, 0.001, 10000, 0.0001);
+    trainPipeline(64 * 64, 1, 1, 0.0001);
 
     return 0;
 }
