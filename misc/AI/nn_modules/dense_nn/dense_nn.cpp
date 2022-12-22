@@ -54,8 +54,11 @@ void DenseNeuralNetwork::initializeParameters(float min, float max) {
 
     // Randomize weights.
     for (int l = 0; l < weights.size(); l++) {
+        // Prevent explosion in large networks.
+        float normalize = 1.f / neurons[l].size();
+
         for (int w = 0; w < weights[l].size(); w++) {
-            weights[l][w] = dist(mt);
+            weights[l][w] = dist(mt) *normalize;
         }
     }
 }
@@ -152,21 +155,28 @@ void DenseNeuralNetwork::readFromFile(std::ifstream* file) {
 //==============================================================================
 
 inline void activationFunction(float& num, int af) {
+    //std::cout << num;
     switch (af) {
-        // Sigmoid
-        case 0: num = 2 / (1 + exp(-2 * num)) - 1; break;
-        // Add more here.
-        case 1: break;
-        default: break;
+    // Sigmoid
+    case 0:
+        num = 2 / (1 + exp(-2 * num)) - 1;
+        break;
+    // Add more here.
+    case 1: break;
+    default: break;
     }
 }
 
 inline void activationFunctionDerivative(float& num, int af) {
     switch (af) {
-        // Sigmoid
-        case 0: break;
-        // Add more here.
-        case 1: break;
-        default: break;
+    // Sigmoid
+    case 0:
+        float e = exp(-2 * num);
+        float e1 = e + 1;
+        num = 4 * e / (e1 * e1);
+        break;
+    // Add more here.
+    case 1: break;
+    default: break;
     }
 }
