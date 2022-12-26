@@ -1,1 +1,1 @@
-g++ -c matrix.h
+g++ tester.cpp -g -o main

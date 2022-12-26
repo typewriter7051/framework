@@ -1,27 +1,30 @@
+#include <iostream> // These are just for
+#include <iomanip>  // printing the matrix.
+#include <vector>
+
 namespace LA {
 
 class Matrix {
 public:
-    float elements[][];
-
     //==========================================================================
     // Constructors.
     Matrix() {}
 
     Matrix(int i, int j) {
-        elements = float[i][j];
+        elements.resize(i * j);
+        nrows = i;
+        ncols = j;
     }
 
-    Matrix(float data[][]) {
-        elements = data;
-    }
+    Matrix(int i, int j, float* data) {
+        elements.resize(i * j);
+        nrows = i;
+        ncols = j;
 
-    Matrix(int m, int n, float* data) {
-        elements = float[m][n];
-
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                elements[i][j] = data[m * i + j];
+        for (int m = 0; m < i; m++) {
+            for (int n = 0; n < j; n++) {
+                int index = i * m + n;
+                elements[index] = data[index];
             }
         }
     }
@@ -43,26 +46,41 @@ public:
     Matrix operator / (float c) {
         return operation(c, 'd');
     }
+
+    // Access operator overload.
+    float& operator () (int row, int col) {
+        // Use std::vector<>::at() for bounds checking.
+        return elements.at(row * ncols + col);
+    }
     //==========================================================================
     // Operations.
 
     // Returns 2 numbers [# of rows, # of cols]
-    int[] getSize() {
-        int size[2];
-        size[0] = sizeof(A) / sizeof(A[0]);
-        size[1] = sizeof(A[0]) / sizeof(A[0][0]);
-
+    std::vector<int> getSize() {
+        std::vector<int> size = {nrows, ncols};
         return size;
     }
 
+    void printMatrix(int precision) {
+        std::cout << std::setprecision(precision);
+        std::cout << std::fixed << std::endl;
+        for (int r = 0; r < nrows; r++) {
+            std::cout << " ";
+            for (int c = 0; c < ncols; c++) {
+                 std::cout << (*this)(r, c) << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+
     Matrix getTranspose() {
-        int[] size = getSize();
+        std::vector<int> size = getSize();
         // Create a matrix with inverted dimensions.
         Matrix A(size[1], size[0]);
 
         for (int i = 0; i < size[0]; i++) {
             for (int j = 0; j < size[1]; j++) {
-                A[j][i] = elements[i][j];
+                A(j, i) = (*this)(i, j);
             }
         }
 
@@ -70,85 +88,107 @@ public:
     }
 
     Matrix removeRowAndCol(int r, int c) {
-        int size[] = getSize();
+        std::vector<int> size = getSize();
         Matrix A(size[0] - 1, size[1] - 1);
 
         for (int i = 0; i < size[0] - 1; i++) {
             for(int j = 0; j < size[1] - 1; j++) {
-                A[i][j] = elements[i + (i >= r)][j + (j >= c)];
+                int row = i + (i >= r);
+                int col = j + (j >= c);
+                A(i, j) = (*this)(row, col);
             }
         }
 
         return A;
     }
 
-    // If checkZeros is true, the matrix will be searched to see which row/col
-    // has the most 0's to iterate through. This can save some time in sparse matrices.
-    float determinant(bool checkZeros) {
-        int[] size = getSize();
-        // iterpos keeps track of which row/col to iterate through.
-        // This is how each row/col is mapped to index in a m by n matrix.
-        /*
-          m . . . m+n-1
-        0
-        .   .     .
-        .     .   .
-        .       . .
-      m-1   . . .
-        */
-        int iterpos = 0;
-        if (checkZeros) {
-            // Keep track of how many zeros in each row/col.
-            int numZeros[size[0] + size[1]];
-
-            for (int i = 0; i < size[0]; i++) {
-                for (int j = 0; j < size[1]; j++) {
-                    bool isZero = (elements[i][j] == 0);
-                    numZeros[i] += isZero;
-                    numZeros[size[0] + j] += isZero;
-                }
-            }
-
-            // Set interpos to the row/col with the most 0's.
-            int maxIdx = 0;
-            for (int i = 0; i < size[0] + size[1]; i++) {
-                if (numZeros[i] > numZeros[maxIdx]) {
-                    maxIdx = i;
-                }
-            }
-            iterpos = maxIdx;
+    // Assumes matrix of at least 2x2.
+    float determinant() {
+        // Size check.
+        if (nrows != ncols) {return 0;}
+        // Base case.
+        if (nrows == 2) {
+            return (*this)(0, 0) * (*this)(1, 1) - (*this)(1, 0) * (*this)(0, 1);
         }
 
-        if (iterpos < size[0]) {
-            // Iterate along row iterpos.
-        } else {
-            // Iterate along column iterpos - m.
+        float sum = 0;
+        int row = 0; // Dummy variable to hold the row.
+        int sgn = -1;
+        for (int col = 0; col < ncols; col++) {
+            // Update the sign.
+            sgn *= -1;
+            float minor = removeRowAndCol(row, col).determinant();
+            sum += (*this)(row, col) * sgn * minor;
+        }
+
+        return sum;
+    }
+
+    Matrix getAdjugateMatrix() {
+        // Switch row and col because its a transposed matrix.
+        Matrix A(ncols, nrows);
+
+        int sgn = -1;
+        for (int row = 0; row < nrows; row++) {
+            for (int col = 0; col < ncols; col++) {
+                // Update the sign.
+                sgn *= -1;
+
+                A(col, row) = sgn * removeRowAndCol(row, col).determinant();
+            }
+        }
+
+        return A;
+    }
+
+    Matrix getInverse() {
+        float det = determinant();
+        // If the matrix is singular return an empty matrix.
+        if (det == 0) {
+            return Matrix(0, 0);
+        }
+        
+        return getAdjugateMatrix() / det;
+    }
+
+    // Add scalar*row1 onto row2.
+    void type3(float scalar, int row1, int row2) {
+        for (int col = 0; col < ncols; col++) {
+            (*this)(row2, col) += scalar * (*this)(row1, col);
         }
     }
 
+    Matrix rowEchelon() {
+        Matrix A = *this;
+
+        return A;
+    }
 
 private:
+    std::vector<float> elements;
+    int nrows, ncols;
     // Helper function intended to be compiled with optimization to trim out 
     // the switch statement (and vectorize).
     inline Matrix operation(float c, const char mode) {
         Matrix A = *this;
-        int[] size = getSize();
+        auto size = getSize();
 
         for (int i = 0; i < size[0]; i++) {
             for (int j = 0; j < size[1]; j++) {
-                switch(mode):
+                switch(mode) {
                 case 'a':
-                    A[i][j] += c;
+                    A(i, j) += c;
                     break;
                 case 's':
-                    A[i][j] -= c;
+                    A(i, j) -= c;
                     break;
                 case 'm':
-                    A[i][j] *= c;
+                    A(i, j) *= c;
                     break;
                 case 'd':
-                    A[i][j] /= c;
+                    A(i, j) /= c;
                     break;
+                }
             }
         }
 
