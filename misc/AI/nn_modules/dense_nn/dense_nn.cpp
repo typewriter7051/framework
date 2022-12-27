@@ -166,7 +166,7 @@ inline void activationFunction(float& num, int af) {
     switch (af) {
     // Sigmoid
     case 0: {
-        num = 2 / (1 + exp(-2 * num)) - 1;
+        //num = 2 / (1 + exp(-2 * num)) - 1;
         break;
     }
     // Add more here.
@@ -179,9 +179,9 @@ inline void activationFunctionDerivative(float& num, int af) {
     switch (af) {
     // Sigmoid
     case 0: {
-        float e = exp(-2 * num);
-        float e1 = e + 1;
-        num = 4 * e / (e1 * e1);
+        //float e = exp(-2 * num);
+        //float e1 = e + 1;
+        //num = 4 * e / (e1 * e1);
         break;
     }
     // Add more here.
