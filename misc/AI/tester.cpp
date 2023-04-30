@@ -5,6 +5,7 @@
 #include "neural_network.h"
 #include "nn_modules/test_module/test_module.h"
 #include "nn_modules/dense_nn/dense_nn.h"
+#include "nn_modules/zipper/zipper_module.h"
 
 class TestNeuralNetwork : public NeuralNetwork {
 public:
@@ -15,6 +16,9 @@ public:
 			size,
 			size
 		});
+
+        zip = ZipperModule(size, true, 1);
+        unzip = ZipperModule(size, false, 1);
 
         /*
         m1 = TestModule(size / comp);
@@ -29,7 +33,9 @@ public:
 
         // Run the pipeline from first to last.
         std::vector<NNModule*> moduleOrder {
-            &d1
+            &zip,
+            &d1,
+            &unzip
         };
         initialize(moduleOrder, -1, 1);
     }
@@ -37,6 +43,7 @@ public:
 private:
     TestModule m1, m2, m3;
     DenseNeuralNetwork d1, d2;
+    ZipperModule zip, unzip;
 };
 //==============================================================================
 std::vector<float> generateData(int n) {

@@ -1,1 +1,1 @@
-g++ nn_module.cpp neural_network.cpp nn_modules/test_module/test_module.cpp nn_modules/dense_nn/dense_nn.cpp tester.cpp -g -Ofast -mavx2 -fopt-info-vec-optimized -o main
+g++ nn_module.cpp neural_network.cpp nn_modules/test_module/test_module.cpp nn_modules/dense_nn/dense_nn.cpp nn_modules/zipper/zipper_module.cpp tester.cpp -g -Ofast -mavx2 -fopt-info-vec-optimized -o main

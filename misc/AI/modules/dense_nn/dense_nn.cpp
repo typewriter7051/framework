@@ -32,18 +32,12 @@ DenseNeuralNetwork::DenseNeuralNetwork(std::vector<int> sizes) {
 
         derivs[i].resize(sizes[i]);
     }
-    // Erase the 1 element in the output layer.
-    int lastIndex = sizes.size() - 1;
-    neurons[lastIndex].erase(neurons[lastIndex].end() - 1);
 
     for (int i = 0; i < sizes.size() - 1; i++) {
         weights[i].resize((sizes[i] + 1) * sizes[i + 1]);
     }
 }
 //==============================================================================
-c_vecp DenseNeuralNetwork::getOutputs() {
-    return &neurons.back();
-}
 
 void DenseNeuralNetwork::initializeParameters(float min, float max) {
     std::mt19937 mt;
@@ -64,9 +58,9 @@ void DenseNeuralNetwork::initializeParameters(float min, float max) {
 }
 
 inline void activationFunction(float&, int);
-inline void activationFunctionDerivative(float&, int);
+inline void activationFunctionDerivative(float&, float&, int);
 ///*
-void DenseNeuralNetwork::process(c_vecp inputs) {
+void DenseNeuralNetwork::process() {
     // Copy the input vector to the array.
     neurons[0] = *inputs;
     neurons[0].push_back(1); // Re-add the 1's column after copying the inputs vector.
@@ -90,6 +84,12 @@ void DenseNeuralNetwork::process(c_vecp inputs) {
         for (int on = 0; on < numONs; on++) {
             activationFunction(neurons[l + 1][on], 0);
         }
+    }
+
+    // Add the result to outputs.
+    // The -1 is important because the output layer in neurons has an extra 1 at the end.
+    for (int i = 0; i < neurons.back().size() - 1; i++) {
+        outputs[i] += neurons.back()[i];
     }
 }
 //*/
@@ -115,16 +115,16 @@ inline void DenseNeuralNetwork::processLayer(int l, float stepSize) {
     // (Don't run activation function on input layer)
     if (l > 1)
     for (int in = 0; in < numINs - 1; in++) {
-        activationFunctionDerivative(derivs[l - 1][in], 0);
+         activationFunctionDerivative(derivs[l - 1][in], neurons[l - 1][in], 0);
     }
 }
 
-c_vecp DenseNeuralNetwork::train(c_vecp d, float stepSize) {
+void DenseNeuralNetwork::train(float stepSize) {
     // Copy derivs to last layer and calculate derivative
     // before activation function.
-    derivs[derivs.size() - 1] = *d;
-    for (int i = 0; i < d->size(); i++) {
-        activationFunctionDerivative(derivs[derivs.size() - 1][i], 0);
+    derivs.back() = *derivOutputs;
+    for (int i = 0; i < derivs.back().size(); i++) {
+        activationFunctionDerivative(derivs[derivs.size() - 1][i], neurons[derivs.size() - 1][i], 0);
     }
 
     // Reset derivs of hidden layers to 0, but don't erase the
@@ -138,10 +138,12 @@ c_vecp DenseNeuralNetwork::train(c_vecp d, float stepSize) {
     for (int l = numLayers - 1; l > 0; l--) {
         // Calculate derivative for next layer, then move weights and biases.
         processLayer(l, stepSize);
-    }	
+    }
 
-    // Return new derivatives vector for the next module.
-    return &derivs[0];
+    // After derivs is finished processing add it to the input deriv layer.
+    for (int i = 0; i < derivs[0].size(); i++) {
+        derivInputs[i] += derivs[0][i];
+    }
 }
 //==============================================================================
 
@@ -166,7 +168,7 @@ inline void activationFunction(float& num, int af) {
     switch (af) {
     // Sigmoid
     case 0: {
-        //num = 2 / (1 + exp(-2 * num)) - 1;
+        num = 2 / (1 + exp(-2 * num)) - 1;
         break;
     }
     // Add more here.
@@ -175,13 +177,13 @@ inline void activationFunction(float& num, int af) {
     }
 }
 
-inline void activationFunctionDerivative(float& num, int af) {
+inline void activationFunctionDerivative(float& num, float& av, int af) {
     switch (af) {
     // Sigmoid
     case 0: {
-        //float e = exp(-2 * num);
-        //float e1 = e + 1;
-        //num = 4 * e / (e1 * e1);
+        float e = exp(-2 * av);
+        float e1 = e + 1;
+        num *= 4 * e / (e1 * e1);
         break;
     }
     // Add more here.

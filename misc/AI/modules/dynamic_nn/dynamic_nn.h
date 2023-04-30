@@ -1,9 +1,10 @@
 #pragma once
 #include "dynamic_neuron.h"
+#include "../../pipeline.h"
 #include <vector>
 #include <string>
 
-class DynamicNeuralNetwork : public NNModule {
+class DynamicNeuralNetwork : public Module {
 public:
 	//--------------------------------------------------------------------------------
 	// Constructors.
